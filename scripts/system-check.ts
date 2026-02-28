@@ -1,3 +1,4 @@
+import http from 'http';
 
 const colors = {
     red: '\x1b[31m',
@@ -10,27 +11,34 @@ const colors = {
 async function checkHealth() {
     console.log(colors.bold + '\n🚥 LightShare 系統紅綠燈測試驗證中...\n' + colors.reset);
 
-    const check = async (name: string, url: string) => {
+    const check = (name: string, url: string): Promise<boolean> => {
         process.stdout.write(`測試項目: ${name.padEnd(20)} ... `);
-        try {
-            const resp = await fetch(url);
-            if (resp.ok) {
-                console.log(colors.green + '[ OK ]' + colors.reset);
-                return true;
-            } else {
-                console.log(colors.red + '[ FAIL ]' + colors.reset);
-                return false;
-            }
-        } catch (e) {
-            console.log(colors.red + '[ DISCONNECTED ]' + colors.reset);
-            return false;
-        }
+        return new Promise((resolve) => {
+            const req = http.get(url, (res) => {
+                if (res.statusCode && res.statusCode >= 200 && res.statusCode < 400) {
+                    console.log(colors.green + '[ OK ]' + colors.reset);
+                    resolve(true);
+                } else {
+                    console.log(colors.red + `[ FAIL: HTTP ${res.statusCode} ]` + colors.reset);
+                    resolve(false);
+                }
+            });
+            req.on('error', (e) => {
+                console.log(colors.red + `[ DISCONNECTED: ${e.message} ]` + colors.reset);
+                resolve(false);
+            });
+            req.setTimeout(5000, () => {
+                console.log(colors.red + '[ TIMEOUT ]' + colors.reset);
+                req.destroy();
+                resolve(false);
+            });
+        });
     };
 
     const results = [
-        await check('API Server', 'http://localhost:3001/api/health'),
-        await check('Database (Posts)', 'http://localhost:3001/api/posts'),
-        await check('Frontend', 'http://localhost:3000/'),
+        await check('API Server', 'http://127.0.0.1:3001/api/health'),
+        await check('Database (Posts)', 'http://127.0.0.1:3001/api/posts'),
+        await check('Frontend', 'http://127.0.0.1:3000/'),
     ];
 
     const allPassed = results.every(r => r === true);
