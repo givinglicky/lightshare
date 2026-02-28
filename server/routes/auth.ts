@@ -140,4 +140,78 @@ router.get('/me', authenticate, async (req: Request, res: Response, next) => {
     }
 });
 
+import { OAuth2Client } from 'google-auth-library';
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+/**
+ * POST /api/auth/google
+ * Google OAuth 登入/註冊
+ */
+router.post('/google', async (req: Request, res: Response, next) => {
+    try {
+        const { credential } = req.body;
+
+        if (!credential) {
+            throw new ApiError(400, '缺少 Google 驗證資訊');
+        }
+
+        // 1. 驗證 Google ID Token
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            throw new ApiError(401, '無效的 Google 帳戶資訊');
+        }
+
+        const { email, name, picture, sub: googleId } = payload;
+
+        // 2. 尋找或建立用戶
+        let user = UserModel.findByEmail(email);
+
+        if (!user) {
+            // 如果不存在，建立新用戶
+            const userId = crypto.randomUUID();
+            // Google 用戶沒有密碼，我們可以用隨機字串代替
+            const password_hash = await hashPassword(crypto.randomBytes(16).toString('hex'));
+
+            user = {
+                id: userId,
+                name: name || 'Google User',
+                email: email,
+                password_hash,
+                avatar: picture || '',
+                bio: '來自 Google 的新朋友',
+                location: '',
+                created_at: new Date().toISOString()
+            };
+
+            UserModel.create(user);
+        }
+
+        // 3. 產生本地 Token
+        const token = generateToken(user.id);
+
+        // 4. 回傳結果
+        res.json({
+            success: true,
+            message: 'Google 登入成功',
+            data: {
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    avatar: user.avatar
+                }
+            }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
