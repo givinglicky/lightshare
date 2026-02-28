@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
@@ -66,19 +67,28 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // ========================
-// 靜態檔案服務 (正式環境)
+// 靜態檔案服務 & SPA 支援
 // ========================
-if (process.env.NODE_ENV === 'production') {
-    // 服務 Vite 編譯後的檔案
-    const distPath = path.join(__dirname, '../dist');
+
+const distPath = path.join(__dirname, '../dist');
+
+// 如果 dist 資料夾存在，則提供靜態檔案服務
+if (fs.existsSync(distPath)) {
+    console.log(`📡 Serving static files from: ${distPath}`);
     app.use(express.static(distPath));
 
-    // SPA 路由支援 — 所有非 API 請求都導向 index.html
+    // SPA 路由支援 — 所有非 API 請求且不是靜態檔案的請求都導向 index.html
     app.get('*', (req, res, next) => {
         if (req.path.startsWith('/api')) {
             return next();
         }
-        res.sendFile(path.join(distPath, 'index.html'));
+
+        const indexPath = path.join(distPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            next();
+        }
     });
 }
 
