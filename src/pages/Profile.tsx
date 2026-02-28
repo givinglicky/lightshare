@@ -1,54 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { currentUser, mockPosts } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { Post } from '../types';
-import { postService } from '../services/postService';
 
 export const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posts' | 'bookmarks'>('posts');
-  const [bookmarks, setBookmarks] = useState<Post[]>([]);
-  const [myPosts, setMyPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        if (activeTab === 'bookmarks') {
-          const data = await postService.getBookmarks();
-          setBookmarks(data);
-        } else {
-          const data = await postService.getMyPosts();
-          setMyPosts(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch data:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, [activeTab]);
+  const myPosts = [
+    {
+      id: 'mp1',
+      title: '今天看到了一道彩虹，心情真好',
+      date: '2023/12/01',
+      content: '分享一份微小的幸福，希望大家今天也都有好事發生...',
+      likes: 24,
+      comments: 3
+    },
+    {
+      id: 'mp2',
+      title: '感謝鄰居幫忙修剪樹枝',
+      date: '2023/11/25',
+      content: '社區的溫暖真的無處不在，謝謝王大哥！',
+      likes: 15,
+      comments: 1
+    }
+  ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  if (!user) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-slate-500 mb-4">請先登入以查看個人檔案</p>
-          <Link to="/login" className="text-primary-vibrant font-bold hover:underline">前往登入</Link>
-        </div>
-      </div>
-    );
-  }
+  const bookmarks = [
+    {
+      id: 'b1',
+      title: '這週需要採購雜貨的幫助',
+      author: 'Sarah Jenkins',
+      content: '大家好，我叫 Sarah。最近因為身體不適且剛動完一個小手術...',
+      likes: 12,
+      comments: 2
+    }
+  ];
 
   return (
     <main className="flex-1 flex flex-col max-w-[600px] mx-auto w-full pb-24">
@@ -56,18 +43,18 @@ export const Profile: React.FC = () => {
         <div className="relative">
           <div
             className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm"
-            style={{ backgroundImage: `url("${user.avatar || 'https://lh3.googleusercontent.com/pw/AP1GczPrvN4_8pL7V2sS4v2E6kR0Xv1w5IuQ='}")` }}
+            style={{ backgroundImage: `url("${currentUser.avatar}")` }}
           ></div>
           <div className="absolute bottom-1 right-1 bg-emerald-500 h-6 w-6 rounded-full border-2 border-white flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[14px]">check</span>
           </div>
         </div>
         <div className="mt-4 text-center">
-          <h2 className="text-2xl font-bold">{user.name}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{user.bio || '這個使用者很懶，什麼都沒留下...'}</p>
+          <h2 className="text-2xl font-bold">{currentUser.name}</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">{currentUser.bio}</p>
           <div className="flex items-center justify-center gap-1 mt-2 text-slate-400 text-sm">
             <span className="material-symbols-outlined text-sm">calendar_today</span>
-            <span>加入於 {user.joinDate || '2024/02/26'}</span>
+            <span>加入於 {currentUser.joinDate}</span>
           </div>
         </div>
       </div>
@@ -87,7 +74,7 @@ export const Profile: React.FC = () => {
 
       <div className="px-6 mb-6">
         <div className="flex border-b border-slate-200 dark:border-slate-800 gap-8">
-          <button
+          <button 
             onClick={() => setActiveTab('posts')}
             className={cn(
               "pb-3 text-sm font-bold transition-all relative",
@@ -99,7 +86,7 @@ export const Profile: React.FC = () => {
               <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
             )}
           </button>
-          <button
+          <button 
             onClick={() => setActiveTab('bookmarks')}
             className={cn(
               "pb-3 text-sm font-bold transition-all relative",
@@ -124,29 +111,23 @@ export const Profile: React.FC = () => {
               exit={{ opacity: 0, x: 10 }}
               className="space-y-4"
             >
-              {isLoading ? (
-                <div className="py-10 text-center text-slate-400 text-sm">載入中...</div>
-              ) : myPosts.length > 0 ? (
+              {myPosts.length > 0 ? (
                 myPosts.map((post) => (
-                  <Link
-                    key={post.id}
-                    to={`/post/${post.id}`}
-                    className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all overflow-hidden"
-                  >
+                  <div key={post.id} className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all">
                     <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{post.title}</h3>
-                      <span className="text-[10px] text-slate-400 shrink-0 ml-2">{new Date(post.created_at || '').toLocaleDateString()}</span>
+                      <h3 className="font-bold text-slate-800 dark:text-slate-200">{post.title}</h3>
+                      <span className="text-xs text-slate-400">{post.date}</span>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{post.content}</p>
                     <div className="flex gap-4 mt-2">
-                      <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold">
-                        <span className="material-symbols-outlined text-xs">sunny</span> {post.likes_count}
+                      <div className="flex items-center gap-1 text-xs text-amber-600">
+                        <span className="material-symbols-outlined text-xs">sunny</span> {post.likes}
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold">
-                        <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments_count}
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               ) : (
                 <div className="py-10 text-center text-slate-400 text-sm">尚無貼文</div>
@@ -160,32 +141,23 @@ export const Profile: React.FC = () => {
               exit={{ opacity: 0, x: -10 }}
               className="space-y-4"
             >
-              {isLoading ? (
-                <div className="py-10 text-center text-slate-400 text-sm">載入中...</div>
-              ) : bookmarks.length > 0 ? (
+              {bookmarks.length > 0 ? (
                 bookmarks.map((post) => (
-                  <Link
-                    key={post.id}
-                    to={`/post/${post.id}`}
-                    className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all overflow-hidden"
-                  >
+                  <div key={post.id} className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all">
                     <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{post.title}</h3>
-                      <span className="text-[10px] text-slate-400 shrink-0 ml-2">{new Date(post.created_at || '').toLocaleDateString()}</span>
+                      <h3 className="font-bold text-slate-800 dark:text-slate-200">{post.title}</h3>
+                      <span className="text-xs text-slate-400">{post.author}</span>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{post.content}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] text-slate-500 font-medium">@{post.author_name}</span>
-                      <div className="flex gap-4">
-                        <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold">
-                          <span className="material-symbols-outlined text-xs">sunny</span> {post.likes_count}
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold">
-                          <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments_count}
-                        </div>
+                    <div className="flex gap-4 mt-2">
+                      <div className="flex items-center gap-1 text-xs text-amber-600">
+                        <span className="material-symbols-outlined text-xs">sunny</span> {post.likes}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
+                        <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 ))
               ) : (
                 <div className="py-10 text-center text-slate-400 text-sm">尚無收藏</div>
@@ -211,10 +183,7 @@ export const Profile: React.FC = () => {
           </div>
           <span className="material-symbols-outlined text-slate-400">chevron_right</span>
         </Link>
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-        >
+        <button className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined">logout</span>
             <span className="font-medium">登出</span>

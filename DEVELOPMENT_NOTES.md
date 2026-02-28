@@ -1,6 +1,6 @@
 # 📋 LightShare 開發筆記
 
-> **最後更新：** 2026-02-26
+> **最後更新：** 2026-02-28
 > **專案描述：** LightShare — 社區互助平台，讓用戶分享故事、發起求助、給予鄰居正能量支持。
 
 ---
@@ -55,7 +55,7 @@ lightshare/
 │   │   ├── Avatar.tsx                 # 📌 待建立：頭像元件
 │   │   ├── Toast.tsx                  # 📌 待建立：全域 Toast 通知元件
 │   │   ├── LoadingSpinner.tsx         # 📌 待建立：載入中動畫
-│   │   ├── ProtectedRoute.tsx         # 📌 待建立：路由守衛
+│   │   ├── ProtectedRoute.tsx         # ✅ 路由守衛
 │   │   └── SearchBar.tsx              # 📌 待建立：搜尋列元件
 │   │
 │   ├── pages/                         # 📄 頁面元件（每個路由一個）
@@ -68,12 +68,12 @@ lightshare/
 │   │   ├── NotificationSettings.tsx   # ✅ 通知設定
 │   │   ├── CreatePost.tsx             # ✅ 發佈貼文（3 步驟）
 │   │   ├── Success.tsx                # ✅ 發佈成功
-│   │   ├── About.tsx                  # 📌 待建立：關於我們
-│   │   ├── Notifications.tsx          # 📌 待建立：完整通知列表
-│   │   └── SearchResults.tsx          # 📌 待建立：搜尋結果頁
+│   │   ├── About.tsx                  # ✅ 關於我們
+│   │   ├── Notifications.tsx          # ✅ 完整通知列表
+│   │   └── SearchResults.tsx          # ✅ 搜尋結果頁
 │   │
 │   ├── contexts/                      # 🌐 React Context（全域狀態）
-│   │   ├── AuthContext.tsx            # 📌 待建立：用戶認證狀態
+│   │   ├── AuthContext.tsx            # ✅ 用戶認證狀態
 │   │   └── ThemeContext.tsx           # 📌 待建立：深/淺色主題切換
 │   │
 │   ├── hooks/                         # 🪝 自訂 React Hooks
@@ -83,11 +83,11 @@ lightshare/
 │   │   └── useDebounce.ts            # 📌 待建立：防抖 Hook（搜尋用）
 │   │
 │   ├── services/                      # 🔌 API 呼叫層
-│   │   ├── api.ts                     # 📌 待建立：Axios/fetch 基礎配置
+│   │   ├── api.ts                     # ✅ fetch 基礎配置
 │   │   ├── authService.ts            # 📌 待建立：認證 API 呼叫
-│   │   ├── postService.ts            # 📌 待建立：貼文 API 呼叫
+│   │   ├── postService.ts            # ✅ 貼文 API 呼叫
 │   │   ├── commentService.ts         # 📌 待建立：留言 API 呼叫
-│   │   ├── notificationService.ts    # 📌 待建立：通知 API 呼叫
+│   │   ├── notificationService.ts    # ✅ 通知 API 呼叫
 │   │   └── userService.ts            # 📌 待建立：用戶 API 呼叫
 │   │
 │   └── lib/                           # 🛠️ 工具函式
@@ -307,7 +307,11 @@ CREATE TABLE notification_settings (
 | 8 | 發佈貼文 | `/create` | `CreatePost.tsx` | ✅ 3 步驟流程 |
 | 9 | 發佈成功 | `/success` | `Success.tsx` | ✅ 含動畫效果 |
 | 10 | 導覽列 | 全站 | `Layout.tsx` | ✅ 含搜尋框 + 通知下拉面板 |
-| 11 | 頁尾 | 全站 | `Layout.tsx` | ✅ 含連結（目前為 #） |
+| 11 | 頁尾 | 全站 | `Layout.tsx` | ✅ 含連結 |
+| 12 | 通知中心 | `/notifications` | `Notifications.tsx` | ✅ 完整通知列表頁 |
+| 13 | 搜尋結果 | `/search` | `SearchResults.tsx` | ✅ 支援關鍵字搜尋 |
+| 14 | 忘記密碼 | `/forgot-password` | `ForgotPassword.tsx` | ✅ 模擬重設郵件流程 |
+| 15 | 法律條款 | `/terms`, `/privacy` | `Legal.tsx` | ✅ 服務條款與隱私政策 |
 
 ### 後端與資料庫基礎
 
@@ -499,10 +503,10 @@ Zeabur 對於全校專案非常友善，且部署過程非常簡單。
 ---
 
 #### 12. UI 完善
-- [ ] 密碼顯示/隱藏功能（Login + Register）
+- ✅ 密碼顯示/隱藏功能（Login + Register）
 - [ ] CreatePost 增加更多分類（目前只有「情緒支持」）
-- [ ] CreatePost 增加圖片上傳
-- [ ] CreatePost 內容字數計數器（目前寫死 0 / 2000）
+- ✅ CreatePost 增加圖片上傳
+- ✅ CreatePost 內容字數計數器（目前已動態連結）
 - [ ] 分享功能（Web Share API 或複製連結）
 - [ ] 貼文詳情的「更多」按鈕（舉報、刪除等）
 - [ ] 下拉刷新 / 無限滾動
@@ -520,8 +524,8 @@ Zeabur 對於全校專案非常友善，且部署過程非常簡單。
 - [ ] 私訊系統
 - [ ] 用戶之間的關注/追蹤
 - [ ] 地理位置功能（顯示附近的求助）
-- [ ] 圖片上傳與儲存（本地或雲端）
-- [ ] SEO 優化（加入 meta tags）
+- ✅ 圖片上傳與儲存（本地或雲端）
+- ✅ SEO 優化（加入 meta tags）
 
 ---
 
@@ -534,8 +538,9 @@ Zeabur 對於全校專案非常友善，且部署過程非常簡單。
 | 3 | Footer 連結全部為 `#` | ✅ 已修復 | 已連結至 About、TOS、Privacy 與 Contact |
 | 4 | 忘記密碼連結為 `#` | ✅ 已修復 | 已新增提示訊息與測試帳號資訊 |
 | 5 | Register 頁面中英混雜 | ✅ 已修復 | 全面中文化（包含側邊欄與表單說明） |
-| 6 | 密碼顯隱按鈕無功能 | ✅ 已修復 | 已實作 `showPassword` 切換邏輯 |
-| 7 | CreatePost 字數計數器固定為 0 | ✅ 已修復 | 已綁定 `formData.content.length` 動態更新 |
+| 6 | 密碼顯隱按鈕無功能 | ✅ 已修復 | 已實作 `showPassword` 切換邏輯 (Login/Register) |
+| 7 | CreatePost 字數計數器固定為 0 | ✅ 已修復 | 已將字數統計與 `content` 狀態綁定 |
+| 8 | CreatePost 無法上傳圖片 | ✅ 已修復 | 實作了本機圖片選取、預覽與移除功能 |
 
 ---
 
@@ -603,3 +608,12 @@ APP_URL="http://localhost:3000"
 - 完成專案全面分析
 - 建立本開發筆記文件
 - 辨識出所有待開發項目與已知問題
+
+### 2026-02-28
+- **路由整合**：正式接入通知中心、搜尋結果、忘記密碼與法律條款頁面。
+- **UI 強化與功能對接**：
+    - 實作登入與註冊頁面的密碼顯隱切換。
+    - 升級 `CreatePost` 流程，新增圖片上傳預覽、標題輸入、與動態字數計數器。
+    - **正式串接 API**：完成 `CreatePost` 表單提交邏輯，支援圖片 (Base64) 儲存至資料庫。
+- **SEO 優化**：於 `index.html` 注入完整 Meta Tags、OG 標籤與 Twitter Card，優化社群分享預覽。
+- **文檔更新**：同步 `DEVELOPMENT_NOTES.md` 的專案進度、修復記錄與樣式標準。

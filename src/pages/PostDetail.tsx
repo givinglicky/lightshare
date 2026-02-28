@@ -1,51 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { mockPosts, currentUser } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { Comment, Post } from '../types';
-import { postService } from '../services/postService';
+import { Comment } from '../types';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const post = mockPosts.find((p) => p.id === id);
+  const [isJoined, setIsJoined] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [supporterCount, setSupporterCount] = useState(156);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Comment[]>([]);
-  const { user } = useAuth();
+  const [comments, setComments] = useState<Comment[]>(post?.comments || []);
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        if (!id) return;
-        setLoading(true);
-        const data = await postService.getPostById(id);
-        setPost(data);
-        setComments(data.comments || []);
-      } catch (err: any) {
-        setError(err.message || '無法取得貼文');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [id]);
-
-  if (loading) {
+  if (!post) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-vibrant-mint"></div>
-      </div>
-    );
-  }
-
-  if (error || !post) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <h2 className="text-2xl font-bold">{error || '找不到貼文'}</h2>
+        <h2 className="text-2xl font-bold">找不到貼文</h2>
         <Link to="/" className="mt-4 text-vibrant-mint font-bold">返回首頁</Link>
       </div>
     );
@@ -59,37 +31,22 @@ export const PostDetail: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
                 <img
-                  className="h-14 w-14 rounded-full border-2 border-primary object-cover"
-                  alt={post.author_name}
-                  src={post.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author_name)}&background=random`}
+                  className="h-14 w-14 rounded-full border-2 border-primary"
+                  alt={post.userName}
+                  src={post.userAvatar}
                 />
                 <div>
-                  <h3 className="font-bold text-lg">{post.author_name}</h3>
+                  <h3 className="font-bold text-lg">{post.userName}</h3>
                   <div className="flex items-center gap-1 text-slate-500 text-sm">
                     <span className="material-symbols-outlined text-sm">location_on</span>
                     <span>{post.location}</span>
                     <span className="mx-1">•</span>
-                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                    <span>{post.timestamp}</span>
                   </div>
                 </div>
               </div>
-              <button
-                onClick={async () => {
-                  try {
-                    const result = post.is_bookmarked
-                      ? await postService.unbookmarkPost(post.id)
-                      : await postService.bookmarkPost(post.id);
-                    setPost({ ...post, is_bookmarked: result.is_bookmarked });
-                  } catch (err) {
-                    console.error('Bookmark failed:', err);
-                  }
-                }}
-                className={cn(
-                  "p-2 rounded-full transition-all",
-                  post.is_bookmarked ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" : "text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                )}
-              >
-                <span className={cn("material-symbols-outlined", post.is_bookmarked && "fill-icon")}>bookmark</span>
+              <button className="text-slate-400 hover:text-slate-600">
+                <span className="material-symbols-outlined">more_horiz</span>
               </button>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">{post.title}</h1>
@@ -98,34 +55,17 @@ export const PostDetail: React.FC = () => {
                 <img className="w-full h-full object-cover" alt={post.title} src={post.image} />
               </div>
             )}
-            <div className="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed text-lg whitespace-pre-wrap">
-              {post.content}
+            <div className="space-y-4 text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+              {post.content.split('\n\n').map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
             </div>
             <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-6">
-              <button
-                onClick={async () => {
-                  try {
-                    const result = post.is_liked
-                      ? await postService.unlikePost(post.id)
-                      : await postService.likePost(post.id);
-                    setPost({ ...post, likes_count: result.likes_count, is_liked: result.is_liked });
-                  } catch (err) {
-                    console.error('Like failed:', err);
-                  }
-                }}
-                className="flex items-center gap-2 group"
-              >
-                <div className={cn(
-                  "h-12 w-12 rounded-full flex items-center justify-center transition-all group-hover:scale-110",
-                  post.is_liked
-                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                    : "bg-amber-50 dark:bg-amber-900/20 text-amber-500"
-                )}>
-                  <span className={cn("material-symbols-outlined text-2xl", post.is_liked && "fill-icon")}>sunny</span>
+              <button className="flex items-center gap-2 group">
+                <div className="h-12 w-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined fill-icon text-2xl">sunny</span>
                 </div>
-                <span className={cn("font-bold", post.is_liked ? "text-amber-600 dark:text-amber-400" : "text-slate-700 dark:text-slate-200")}>
-                  {post.likes_count} 份正能量
-                </span>
+                <span className="font-bold text-slate-700 dark:text-slate-200">{post.likes} 份正能量</span>
               </button>
               <button className="flex items-center gap-2 group">
                 <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
@@ -148,47 +88,39 @@ export const PostDetail: React.FC = () => {
                   src={`https://picsum.photos/seed/supporter${i}/100/100`}
                 />
               ))}
-              {post.is_supported === 1 && (
-                <motion.div
+              {isJoined && (
+                <motion.img
                   initial={{ scale: 0, x: -10 }}
                   animate={{ scale: 1, x: 0 }}
-                  className="h-10 w-10 rounded-full border-2 border-vibrant-mint z-10 bg-white overflow-hidden"
-                >
-                  <img
-                    className="w-full h-full object-cover"
-                    alt="You"
-                    src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random`}
-                  />
-                </motion.div>
+                  className="h-10 w-10 rounded-full border-2 border-vibrant-mint z-10"
+                  alt="You"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnC9pkDkJcLlMMiUlDrz975Y54JGfMGZs1xVkSW2sMiv7mowZZBxExV9WBqQieFiYPld-EEqodfIVdpb57wY1WzIRpvT2ehbIMiKk8C5HJMG-yvUMj5XxqBdsLX-fSwZdGgB060xUK3ld6XTqpeP7HwrIpFOfvHuv2vo6ILLl6b0hiNN_g-2ylLntfHZMBfFee54rJp6XDKfawgxONSKxRgsSS4sUIC-uEhEFP_3Brv8OmKJFuXd0ad4T4g69nol2-bT0uzKoTwdA-"
+                />
               )}
             </div>
             <div>
-              <p className="font-bold text-slate-900 dark:text-slate-100">今天有 {post.supporters_count || 0} 人為 {post.author_name.split(' ')[0]} 加油</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100">今天有 {supporterCount} 人為 {post.userName.split(' ')[0]} 加油</p>
               <p className="text-sm text-slate-600 dark:text-slate-400">您的鼓勵對她很重要</p>
             </div>
           </div>
           <button
-            onClick={async () => {
-              if (post.is_supported !== 1) {
-                try {
-                  const result = await postService.supportPost(post.id);
-                  setPost({ ...post, supporters_count: result.supporters_count, is_supported: result.is_supported });
-                  setShowToast(true);
-                  setTimeout(() => setShowToast(false), 3000);
-                } catch (err) {
-                  console.error('Support failed:', err);
-                }
+            onClick={() => {
+              if (!isJoined) {
+                setIsJoined(true);
+                setSupporterCount(prev => prev + 1);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
               }
             }}
-            disabled={post.is_supported === 1}
+            disabled={isJoined}
             className={cn(
               "w-full sm:w-auto px-6 py-2.5 font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2",
-              post.is_supported === 1
-                ? "bg-slate-200 text-slate-500 cursor-default"
+              isJoined 
+                ? "bg-slate-200 text-slate-500 cursor-default" 
                 : "bg-vibrant-mint text-white hover:brightness-110 active:scale-95"
             )}
           >
-            {post.is_supported === 1 ? (
+            {isJoined ? (
               <>
                 <span className="material-symbols-outlined text-sm">check_circle</span>
                 已加入
@@ -218,7 +150,7 @@ export const PostDetail: React.FC = () => {
               <img
                 className="h-10 w-10 rounded-full"
                 alt="Current user"
-                src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random`}
+                src={currentUser.avatar}
               />
               <div className="flex-1 space-y-3">
                 <textarea
@@ -230,15 +162,19 @@ export const PostDetail: React.FC = () => {
                 ></textarea>
                 <div className="flex justify-end">
                   <button
-                    onClick={async () => {
-                      if (!commentText.trim() || !post) return;
-                      try {
-                        const newComment = await postService.createComment(post.id, commentText);
-                        setComments([newComment, ...comments]);
-                        setCommentText('');
-                      } catch (err: any) {
-                        alert(err.message || '留言失敗');
-                      }
+                    onClick={() => {
+                      if (!commentText.trim()) return;
+                      const newComment: Comment = {
+                        id: `c${Date.now()}`,
+                        userId: currentUser.id,
+                        userName: currentUser.name,
+                        userAvatar: currentUser.avatar,
+                        content: commentText,
+                        timestamp: '剛剛',
+                        likes: 0
+                      };
+                      setComments([newComment, ...comments]);
+                      setCommentText('');
                     }}
                     disabled={!commentText.trim()}
                     className="px-6 py-2 bg-vibrant-mint text-white font-bold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -260,15 +196,11 @@ export const PostDetail: React.FC = () => {
                 className="bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-800"
               >
                 <div className="flex gap-4">
-                  <img
-                    className="h-10 w-10 rounded-full object-cover"
-                    alt={comment.author_name}
-                    src={comment.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author_name)}&background=random`}
-                  />
+                  <img className="h-10 w-10 rounded-full" alt={comment.userName} src={comment.userAvatar} />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold">{comment.author_name}</h4>
-                      <span className="text-xs text-slate-400">{new Date(comment.created_at).toLocaleDateString()}</span>
+                      <h4 className="font-bold">{comment.userName}</h4>
+                      <span className="text-xs text-slate-400">{comment.timestamp}</span>
                     </div>
                     <p className="text-slate-700 dark:text-slate-300 mb-4">{comment.content}</p>
                     <div className="flex items-center gap-3">

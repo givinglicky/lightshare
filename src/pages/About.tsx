@@ -1,61 +1,91 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
 export const About: React.FC = () => {
-    return (
-        <main className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-12"
-            >
-                <div className="text-center space-y-4">
-                    <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                        關於 LightShare
-                    </h1>
-                    <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                        傳遞光芒，連結鄰里。我們致力於創造一個溫暖、安全且充滿互助精神的社區空間。
-                    </p>
-                </div>
+  return (
+    <main className="max-w-[800px] mx-auto px-6 py-12 pb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-16"
+      >
+        <div className="inline-block p-6 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-6 relative group">
+          <div className="absolute inset-0 bg-amber-400/20 blur-2xl rounded-full scale-125 animate-pulse"></div>
+          <img 
+            src="https://storage.googleapis.com/aistudio-user-uploads-public/60287235303/陽光種子希望園_logo.png" 
+            alt="陽光種子希望園 Logo" 
+            className="h-24 w-24 object-contain relative z-10 transition-transform group-hover:scale-110"
+            referrerPolicy="no-referrer"
+          />
+          <span className="material-symbols-outlined absolute top-2 right-2 text-amber-500 text-2xl z-20 animate-spin-slow">sunny</span>
+        </div>
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">關於 陽光種子希望園</h1>
+        <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          我們相信，每一份小小的善意都像是一顆種子，只要有陽光的照耀與細心的呵護，終將在心田開出希望的花朵。
+        </p>
+      </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div className="rounded-2xl overflow-hidden shadow-xl aspect-video bg-slate-200 dark:bg-slate-800 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-6xl text-slate-400">volunteer_activism</span>
-                    </div>
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">我們的使命</h2>
-                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                            在現代快節奏的都市生活中，人們往往與鄰居疏遠。LightShare 的誕生是為了打破這道冰冷的牆，
-                            透過「情緒支持」、「生活協助」與「物資共享」，讓每個人都能在需要時找到援手，在有餘力時分享溫暖。
-                        </p>
-                        <div className="space-y-3">
-                            {[
-                                { icon: 'favorite', text: '建立以人為本的社群連結' },
-                                { icon: 'security', text: '提供安全可靠的互動環境' },
-                                { icon: 'rocket_launch', text: '推動社區互助與資源共享' }
-                            ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-3">
-                                    <div className="size-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-emerald-600 text-sm">{item.icon}</span>
-                                    </div>
-                                    <span className="text-slate-700 dark:text-slate-300 font-medium">{item.text}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+      <div className="grid md:grid-cols-2 gap-12 mb-20">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="space-y-4"
+        >
+          <h2 className="text-2xl font-bold text-amber-600 flex items-center gap-2">
+            <span className="material-symbols-outlined">wb_sunny</span>
+            我們的使命
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            「陽光種子希望園」致力於打造一個溫暖、互助的社區平台。我們希望透過簡單的分享與互動，連結鄰里間的情感，讓處於困境中的人感受到溫暖，讓願意付出的人找到方向。
+          </p>
+        </motion.div>
 
-                <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-3xl p-8 md:p-12 text-center space-y-6">
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">準備好加入我們了嗎？</h2>
-                    <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-                        無論是尋求幫助還是提供協助，LightShare 都歡迎您的加入。讓我們一起點亮社區的每一個角落。
-                    </p>
-                    <Link to="/register" className="inline-block bg-vibrant-mint hover:brightness-110 text-white font-bold px-8 py-3 rounded-full transition-all shadow-lg shadow-vibrant-mint/20">
-                        立即註冊帳戶
-                    </Link>
-                </div>
-            </motion.div>
-        </main>
-    );
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="space-y-4"
+        >
+          <h2 className="text-2xl font-bold text-emerald-600 flex items-center gap-2">
+            <span className="material-symbols-outlined">psychiatry</span>
+            我們的願景
+          </h2>
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+            我們願景是讓社區不再只是地理上的劃分，而是心靈上的依靠。在這裡，沒有人是孤島，每一顆種子都能獲得成長的力量，共同編織出一片充滿陽光的希望森林。
+          </p>
+        </motion.div>
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-8 md:p-12 text-center"
+      >
+        <h2 className="text-2xl font-bold mb-6">為什麼選擇我們？</h2>
+        <div className="grid sm:grid-cols-3 gap-8">
+          <div className="space-y-2">
+            <div className="text-amber-500 text-3xl font-bold">100%</div>
+            <p className="text-sm font-bold">純粹的善意</p>
+            <p className="text-xs text-slate-500">不帶任何商業目的，只為傳遞溫暖。</p>
+          </div>
+          <div className="space-y-2">
+            <div className="text-emerald-500 text-3xl font-bold">即時</div>
+            <p className="text-sm font-bold">鄰里互助</p>
+            <p className="text-xs text-slate-500">連結最親近的力量，解決燃眉之急。</p>
+          </div>
+          <div className="space-y-2">
+            <div className="text-blue-500 text-3xl font-bold">安全</div>
+            <p className="text-sm font-bold">隱私保護</p>
+            <p className="text-xs text-slate-500">我們重視您的安全，建立互信的環境。</p>
+          </div>
+        </div>
+      </motion.div>
+
+      <div className="mt-20 text-center">
+        <p className="text-slate-500 italic">「讓愛傳遞到每個角落，從一顆種子開始。」</p>
+      </div>
+    </main>
+  );
 };

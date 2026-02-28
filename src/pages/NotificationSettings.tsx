@@ -84,7 +84,7 @@ export const NotificationSettings: React.FC = () => {
 
         <SettingItem
           title="社群更新"
-          description="接收來自 LightShare 的重要公告與活動資訊"
+          description="接收來自 陽光種子希望園 的重要公告與活動資訊"
           enabled={settings.communityUpdates}
           onToggle={() => toggleSetting('communityUpdates')}
         />
