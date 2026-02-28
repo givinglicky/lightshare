@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001/api';
+const API_URL = '/api';
 
 /**
  * 通用的 fetch 封裝，處理 Token 與錯誤
