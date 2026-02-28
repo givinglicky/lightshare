@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
+@theme {
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Public Sans", sans-serif;
+
+  --color-primary: #eaf6f5;
+  --color-vibrant-mint: #00A67E;
+  --color-background-light: #f6f7f7;
+  --color-background-dark: #151d1c;
+  --color-amber-warm: #FFF8E1;
+  --color-primary-vibrant: #4DB6AC;
+
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.75rem;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-background-light text-slate-900 dark:bg-background-dark dark:text-slate-100;
+  }
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.fill-icon {
+  font-variation-settings: 'FILL' 1;
+}
