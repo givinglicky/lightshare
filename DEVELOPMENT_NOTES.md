@@ -541,6 +541,7 @@ Zeabur 對於全校專案非常友善，且部署過程非常簡單。
 | 6 | 密碼顯隱按鈕無功能 | ✅ 已修復 | 已實作 `showPassword` 切換邏輯 (Login/Register) |
 | 7 | CreatePost 字數計數器固定為 0 | ✅ 已修復 | 已將字數統計與 `content` 狀態綁定 |
 | 8 | CreatePost 無法上傳圖片 | ✅ 已修復 | 實作了本機圖片選取、預覽與移除功能 |
+| 9 | Zeabur 部署崩潰 - 缺少 jsonwebtoken | ✅ 已修復 | 安裝缺失依賴 `jsonwebtoken` 和 `bcryptjs`，更新 package.json 並推送至 GitHub |
 
 ---
 
@@ -617,3 +618,19 @@ APP_URL="http://localhost:3000"
     - **正式串接 API**：完成 `CreatePost` 表單提交邏輯，支援圖片 (Base64) 儲存至資料庫。
 - **SEO 優化**：於 `index.html` 注入完整 Meta Tags、OG 標籤與 Twitter Card，優化社群分享預覽。
 - **文檔更新**：同步 `DEVELOPMENT_NOTES.md` 的專案進度、修復記錄與樣式標準。
+
+### 2026-03-01
+- **🐛 Bug 修復 - 部署崩潰問題**：
+    - **問題**：Zeabur 部署後服務崩潰，錯誤信息 `Cannot find package 'jsonwebtoken'`
+    - **原因**：`package.json` 缺少 `jsonwebtoken` 和 `bcryptjs` 依賴（雖然程式碼中有使用）
+    - **解決**：
+        ```bash
+        npm install jsonwebtoken bcryptjs @types/jsonwebtoken @types/bcryptjs
+        ```
+    - **Git 操作**：提交並推送更新後的 `package.json` 和 `package-lock.json`
+        ```bash
+        git add package.json package-lock.json
+        git commit -m "Add missing jsonwebtoken and bcryptjs dependencies"
+        git push
+        ```
+    - **後續**：在 Zeabur 控制台重新部署服務
