@@ -542,6 +542,7 @@ Zeabur 對於全校專案非常友善，且部署過程非常簡單。
 | 7 | CreatePost 字數計數器固定為 0 | ✅ 已修復 | 已將字數統計與 `content` 狀態綁定 |
 | 8 | CreatePost 無法上傳圖片 | ✅ 已修復 | 實作了本機圖片選取、預覽與移除功能 |
 | 9 | Zeabur 部署崩潰 - 缺少 jsonwebtoken | ✅ 已修復 | 安裝缺失依賴 `jsonwebtoken` 和 `bcryptjs`，更新 package.json 並推送至 GitHub |
+| 10 | AdminDashboard API 調用失敗 | ✅ 已修復 | 在 `api.ts` 添加默認導出對象，修復 API 路徑和響應結構處理 |
 
 ---
 
@@ -628,9 +629,17 @@ APP_URL="http://localhost:3000"
         npm install jsonwebtoken bcryptjs @types/jsonwebtoken @types/bcryptjs
         ```
     - **Git 操作**：提交並推送更新後的 `package.json` 和 `package-lock.json`
+    - **後續**：在 Zeabur 控制台重新部署服務
+- **🐛 Bug 修復 - API 服務問題**：
+    - **問題**：AdminDashboard 無法正常調用 API，因為 `api.ts` 只導出了 `apiRequest` 函數，沒有默認導出的對象
+    - **原因**：程式碼中使用 `api.get()`, `api.put()`, `api.delete()` 等方法，但 `api.ts` 沒有提供這些便捷方法
+    - **解決**：
+        - 在 `src/services/api.ts` 中添加默認導出對象，包含 `get`, `post`, `put`, `delete` 方法
+        - 修復 `AdminDashboard.tsx` 中的 API 路徑（移除重複的 `/api` 前綴）
+        - 修復 API 響應結構的處理（直接返回 `data` 而不是 `data.data`）
+    - **Git 操作**：
         ```bash
-        git add package.json package-lock.json
-        git commit -m "Add missing jsonwebtoken and bcryptjs dependencies"
+        git add src/services/api.ts src/pages/AdminDashboard.tsx
+        git commit -m "Fix API service: Add default export with HTTP methods and fix AdminDashboard API paths"
         git push
         ```
-    - **後續**：在 Zeabur 控制台重新部署服務
