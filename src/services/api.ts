@@ -28,3 +28,13 @@ export async function apiRequest<T>(
 
     return result.data as T;
 }
+
+/**
+ * 默認導出的 API 對象，提供便捷的 HTTP 方法
+ */
+export default {
+    get: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'GET' }),
+    post: <T>(endpoint: string, data?: any) => apiRequest<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+    put: <T>(endpoint: string, data?: any) => apiRequest<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: <T>(endpoint: string) => apiRequest<T>(endpoint, { method: 'DELETE' }),
+};
