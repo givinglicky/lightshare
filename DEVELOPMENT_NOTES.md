@@ -625,21 +625,148 @@ APP_URL="http://localhost:3000"
     - **問題**：Zeabur 部署後服務崩潰，錯誤信息 `Cannot find package 'jsonwebtoken'`
     - **原因**：`package.json` 缺少 `jsonwebtoken` 和 `bcryptjs` 依賴（雖然程式碼中有使用）
     - **解決**：
-        ```bash
-        npm install jsonwebtoken bcryptjs @types/jsonwebtoken @types/bcryptjs
         ```
-    - **Git 操作**：提交並推送更新後的 `package.json` 和 `package-lock.json`
-    - **後續**：在 Zeabur 控制台重新部署服務
-- **🐛 Bug 修復 - API 服務問題**：
-    - **問題**：AdminDashboard 無法正常調用 API，因為 `api.ts` 只導出了 `apiRequest` 函數，沒有默認導出的對象
-    - **原因**：程式碼中使用 `api.get()`, `api.put()`, `api.delete()` 等方法，但 `api.ts` 沒有提供這些便捷方法
-    - **解決**：
-        - 在 `src/services/api.ts` 中添加默認導出對象，包含 `get`, `post`, `put`, `delete` 方法
-        - 修復 `AdminDashboard.tsx` 中的 API 路徑（移除重複的 `/api` 前綴）
-        - 修復 API 響應結構的處理（直接返回 `data` 而不是 `data.data`）
-    - **Git 操作**：
-        ```bash
-        git add src/services/api.ts src/pages/AdminDashboard.tsx
-        git commit -m "Fix API service: Add default export with HTTP methods and fix AdminDashboard API paths"
-        git push
-        ```
+
+---
+
+## 🤖 内容审核系统
+
+### 系统架构
+
+LightShare 采用**双服务架构**进行内容审核：
+
+```
+┌─────────────┐      HTTP Request      ┌──────────────────┐
+│   前端      │  ─────────────────►    │  审核服务        │
+│  (React)    │    POST /api/moderate  │  (FastAPI)       │
+│             │                        │  + Gemini AI     │
+└─────────────┘                        └──────────────────┘
+       ▲                                       │
+       │         JSON Response                 │
+       └───────────────────────────────────────┘
+              { "status": "approved/blocked" }
+```
+
+### 技术栈
+
+| 组件 | 技术 | 用途 |
+|------|------|------|
+| **审核服务** | FastAPI + Python | 轻量级异步 API 服务 |
+| **AI 审核** | Google Gemini 1.5 Flash | 智能内容审核 |
+| **本地过滤** | 敏感词列表 | 第一道防线，快速过滤 |
+| **前端集成** | React Hook | 调用审核服务 |
+
+### 文件结构
+
+```
+moderation-service/           # 审核服务（独立微服务）
+├── main.py                   # FastAPI 应用主文件
+├── requirements.txt          # Python 依赖
+├── Dockerfile                # Docker 部署配置
+├── .env.example              # 环境变量示例
+└── README.md                 # 服务文档
+
+src/
+├── services/
+│   └── moderationService.ts  # 前端审核服务调用
+└── hooks/
+    └── useModeration.ts      # React Hook
+```
+
+### 审核流程
+
+1. **本地关键词检查**（第一道防线）
+   - 快速匹配敏感词列表
+   - 无需 API 调用，即时响应
+
+2. **AI 智能审核**（第二道防线）
+   - 使用 Gemini API 分析内容
+   - 检测暴力、色情、仇恨言论等
+   - 返回审核结果和原因
+
+### API 端点
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| `GET` | `/health` | 健康检查 |
+| `POST` | `/api/moderate` | 内容审核（推荐） |
+| `POST` | `/api/check-post` | 内容审核（兼容旧版） |
+
+### 使用示例
+
+**前端 React Hook：**
+
+```typescript
+import { useModeration } from '@/hooks/useModeration';
+
+function CreatePost() {
+  const { isChecking, checkContent } = useModeration();
+
+  const handleSubmit = async (content: string) => {
+    const result = await checkContent(content);
+    
+    if (result.status === 'blocked') {
+      alert(`内容审核未通过: ${result.reason}`);
+      return;
+    }
+    
+    // 继续发布流程
+  };
+}
+```
+
+### 部署方式
+
+**本地开发：**
+```bash
+cd moderation-service
+pip install -r requirements.txt
+python main.py
+```
+
+**Docker 部署：**
+```bash
+docker build -t moderation-service .
+docker run -p 8000:8000 -e GEMINI_API_KEY=your_key moderation-service
+```
+
+**Zeabur 部署：**
+1. 在 Zeabur 创建新服务
+2. 连接 GitHub 仓库
+3. 设置环境变量 `GEMINI_API_KEY`
+4. 自动部署
+
+### 成本说明
+
+- **Gemini 1.5 Flash 免费额度**：
+  - 每分钟 15 次请求
+  - 每天 1500 次请求
+  - 完全免费
+
+### 配置项
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| `GEMINI_API_KEY` | Gemini API 密钥 | 必填 |
+| `PORT` | 服务端口 | 8000 |
+| `VITE_MODERATION_SERVICE_URL` | 前端审核服务 URL | http://localhost:8000 |
+
+---
+
+## 📝 开发日志
+
+| # | 问题 | 状态 | 解决方案 |
+|---|------|------|----------|
+| 1 | 前端路由 404 | ✅ 已修复 | 添加 basename="/lightshare" 到 BrowserRouter |
+| 2 | Tailwind 样式不生效 | ✅ 已修复 | 改用 @tailwindcss/vite 插件 |
+| 3 | Vite 构建报错 | ✅ 已修复 | 修正 import 路径和 tsconfig.json |
+| 4 | Login 頁面中英混雜 | ✅ 已修复 | 全面中文化（包含侧边栏与表单说明） |
+| 5 | Register 頁面中英混雜 | ✅ 已修复 | 全面中文化（包含侧边栏与表单说明） |
+| 6 | 密碼顯隱按鈕無功能 | ✅ 已修復 | 已實作 `showPassword` 切換邏輯 (Login/Register) |
+| 7 | CreatePost 字數計數器固定為 0 | ✅ 已修復 | 已將字數統計與 `content` 狀態綁定 |
+| 8 | CreatePost 無法上傳圖片 | ✅ 已修復 | 實作了本機圖片選取、預覽與移除功能 |
+| 9 | Zeabur 部署崩潰 - 缺少 jsonwebtoken | ✅ 已修復 | 安裝缺失依賴 `jsonwebtoken` 和 `bcryptjs`，更新 package.json 並推送至 GitHub |
+| 10 | AdminDashboard API 調用失敗 | ✅ 已修復 | 在 `api.ts` 添加默認導出對象，修復 API 路徑和響應結構處理 |
+| 11 | 部署缺少 cors 依赖 | ✅ 已修复 | 安装 `cors` 包并推送到 GitHub |
+| 12 | 部署缺少 google-auth-library | ✅ 已修复 | 安装 `google-auth-library` 包并推送到 GitHub |
+| 13 | 添加内容审核系统 | ✅ 已完成 | 创建独立的 FastAPI 审核服务，集成 Gemini AI |
