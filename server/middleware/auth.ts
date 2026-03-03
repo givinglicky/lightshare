@@ -13,6 +13,7 @@ declare global {
                 id: string;
                 name: string;
                 email: string;
+                role?: string;
             };
         }
     }
@@ -51,6 +52,7 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
             id: user.id,
             name: user.name,
             email: user.email,
+            role: user.role,
         };
 
         next();
@@ -76,6 +78,7 @@ export const optionalAuthenticate = async (req: Request, _res: Response, next: N
                         id: user.id,
                         name: user.name,
                         email: user.email,
+                        role: user.role,
                     };
                 }
             }
@@ -85,4 +88,20 @@ export const optionalAuthenticate = async (req: Request, _res: Response, next: N
         // 可選驗證中出錯也不要中斷請求
         next();
     }
+};
+
+/**
+ * 驗證管理員權限中間件
+ * 需接在 authenticate 之後使用
+ */
+export const authorizeAdmin = (req: Request, _res: Response, next: NextFunction) => {
+    if (!req.user) {
+        return next(new ApiError(401, '未驗證'));
+    }
+
+    if (req.user.role !== 'admin') {
+        return next(new ApiError(403, '權限不足：需要管理員權限'));
+    }
+
+    next();
 };

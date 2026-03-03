@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
     avatar      TEXT DEFAULT '',
     bio         TEXT DEFAULT '',
     location    TEXT DEFAULT '',
+    role        TEXT DEFAULT 'user',
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

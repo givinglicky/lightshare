@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 export const Register: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <div className="w-full max-w-[1000px] grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-2xl border border-primary/20">
       <div className="hidden lg:flex flex-col justify-between p-12 bg-primary dark:bg-slate-800 relative overflow-hidden">
@@ -66,16 +64,10 @@ export const Register: React.FC = () => {
               <input
                 className="w-full pl-12 pr-12 py-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 focus:ring-2 focus:ring-primary-vibrant/20 focus:border-primary-vibrant transition-all outline-none text-slate-900 dark:text-white placeholder:text-slate-400"
                 placeholder="Create a strong password"
-                type={showPassword ? "text" : "password"}
+                type="password"
               />
-              <button
-                className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <span className="material-symbols-outlined">
-                  {showPassword ? "visibility" : "visibility_off"}
-                </span>
+              <button className="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" type="button">
+                <span className="material-symbols-outlined">visibility</span>
               </button>
             </div>
             <p className="mt-2 text-xs text-slate-500">Minimum 8 characters with a mix of letters and numbers.</p>

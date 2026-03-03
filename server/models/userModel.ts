@@ -8,14 +8,15 @@ export interface User {
     avatar?: string;
     bio?: string;
     location?: string;
+    role?: string;
     created_at?: string;
 }
 
 export const UserModel = {
     create: (user: User) => {
         const stmt = db.prepare(`
-      INSERT INTO users (id, name, email, password_hash, avatar, bio, location)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, name, email, password_hash, avatar, bio, location, role)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
         return stmt.run(
             user.id,
@@ -24,7 +25,8 @@ export const UserModel = {
             user.password_hash,
             user.avatar || '',
             user.bio || '',
-            user.location || ''
+            user.location || '',
+            user.role || 'user'
         );
     },
 

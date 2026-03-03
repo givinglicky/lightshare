@@ -49,7 +49,8 @@ router.post('/register', async (req: Request, res: Response, next) => {
                 user: {
                     id: userId,
                     name,
-                    email
+                    email,
+                    role: 'user'
                 }
             }
         });
@@ -99,7 +100,8 @@ router.post('/login', async (req: Request, res: Response, next) => {
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    avatar: user.avatar
+                    avatar: user.avatar,
+                    role: user.role
                 }
             }
         });
@@ -132,6 +134,7 @@ router.get('/me', authenticate, async (req: Request, res: Response, next) => {
                 avatar: user.avatar,
                 bio: user.bio,
                 location: user.location,
+                role: user.role,
                 created_at: user.created_at
             }
         });
@@ -204,7 +207,8 @@ router.post('/google', async (req: Request, res: Response, next) => {
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    avatar: user.avatar
+                    avatar: user.avatar,
+                    role: user.role
                 }
             }
         });

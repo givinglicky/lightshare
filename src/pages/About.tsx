@@ -9,15 +9,9 @@ export const About: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <div className="inline-block p-6 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-6 relative group">
-          <div className="absolute inset-0 bg-amber-400/20 blur-2xl rounded-full scale-125 animate-pulse"></div>
-          <img 
-            src="https://storage.googleapis.com/aistudio-user-uploads-public/60287235303/陽光種子希望園_logo.png" 
-            alt="陽光種子希望園 Logo" 
-            className="h-24 w-24 object-contain relative z-10 transition-transform group-hover:scale-110"
-            referrerPolicy="no-referrer"
-          />
-          <span className="material-symbols-outlined absolute top-2 right-2 text-amber-500 text-2xl z-20 animate-spin-slow">sunny</span>
+        <div className="inline-block p-8 bg-amber-50 dark:bg-amber-900/20 rounded-full mb-6 relative group">
+          <div className="absolute inset-0 bg-amber-400/30 blur-3xl rounded-full scale-150 animate-pulse"></div>
+          <span className="material-symbols-outlined text-amber-500 text-6xl z-20 animate-spin-slow fill-icon relative">sunny</span>
         </div>
         <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">關於 陽光種子希望園</h1>
         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">

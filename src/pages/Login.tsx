@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 export const Login: React.FC = () => {
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <div className="flex w-full max-w-[1200px] h-[800px] bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
       <div className="hidden lg:flex flex-1 bg-primary dark:bg-primary/10 relative flex-col justify-center items-center p-12 overflow-hidden">
@@ -50,7 +48,7 @@ export const Login: React.FC = () => {
             <div className="relative">
               <div className="flex justify-between items-center mb-2">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">密碼</label>
-                <Link className="text-sm text-primary-vibrant hover:underline font-semibold" to="/forgot-password">忘記密碼？</Link>
+                <a className="text-sm text-primary-vibrant hover:underline font-semibold" href="#">忘記密碼？</a>
               </div>
               <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg bg-transparent transition-all px-4 py-3 group focus-within:border-primary-vibrant focus-within:ring-1 focus-within:ring-primary-vibrant">
                 <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary-vibrant mr-3">lock</span>
@@ -58,14 +56,9 @@ export const Login: React.FC = () => {
                   className="bg-transparent border-none focus:ring-0 w-full text-slate-900 dark:text-white placeholder:text-slate-400"
                   placeholder="輸入您的密碼"
                   required
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                 />
-                <span
-                  className="material-symbols-outlined text-slate-400 cursor-pointer hover:text-slate-600 transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? "visibility" : "visibility_off"}
-                </span>
+                <span className="material-symbols-outlined text-slate-400 cursor-pointer hover:text-slate-600">visibility_off</span>
               </div>
             </div>
             <div className="flex items-center gap-2">

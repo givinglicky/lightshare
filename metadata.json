@@ -1,5 +1,6 @@
 {
   "name": "陽光種子希望園",
   "description": "陽光種子希望園是一個分享故事、尋求幫助並為鄰居提供支持的社區平台。",
+  "repository": "https://github.com/givinglicky/lightshare",
   "requestFramePermissions": []
 }

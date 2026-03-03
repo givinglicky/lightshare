@@ -11,10 +11,6 @@ import { NotificationSettings } from './pages/NotificationSettings';
 import { CreatePost } from './pages/CreatePost';
 import { About } from './pages/About';
 import { Success } from './pages/Success';
-import { Notifications } from './pages/Notifications';
-import { SearchResults } from './pages/SearchResults';
-import { ForgotPassword } from './pages/ForgotPassword';
-import { LegalPage } from './pages/Legal';
 
 const App: React.FC = () => {
   return (
@@ -33,11 +29,6 @@ const App: React.FC = () => {
             <Route path="/profile/notifications" element={<NotificationSettings />} />
             <Route path="/create" element={<CreatePost />} />
             <Route path="/about" element={<About />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/terms" element={<LegalPage title="服務條款" />} />
-            <Route path="/privacy" element={<LegalPage title="隱私權政策" />} />
             <Route path="/success" element={<Success />} />
             <Route path="*" element={<div className="p-10 text-center">404 - 頁面不存在</div>} />
           </Routes>

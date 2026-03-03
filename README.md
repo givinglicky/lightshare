@@ -1,20 +1,18 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 陽光種子希望園 (LightShare)
 
-# Run and deploy your AI Studio app
+陽光種子希望園是一個溫暖、互助的社區平台。我們相信每一份小小的善意都像是一顆種子，只要有陽光的照耀與細心的呵護，終將在心田開出希望的花朵。
 
-This contains everything you need to run your app locally.
+## 專案目標
+- 連結鄰里情感，打造互助社區。
+- 提供即時的求助與支援管道。
+- 分享生活中的正能量故事。
 
-View your app in AI Studio: https://ai.studio/apps/db7c0764-f0ec-4a85-87fa-7923dbfb0664
+## 技術棧
+- React 19
+- TypeScript
+- Tailwind CSS
+- Motion (動畫)
+- Vite
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 連結
+- GitHub 倉庫: [https://github.com/givinglicky/lightshare](https://github.com/givinglicky/lightshare)

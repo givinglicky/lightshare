@@ -56,15 +56,9 @@ export const Navbar: React.FC = () => {
       <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative">
-              <img 
-                src="https://storage.googleapis.com/aistudio-user-uploads-public/60287235303/陽光種子希望園_logo.png" 
-                alt="陽光種子希望園 Logo" 
-                className="h-12 w-12 object-contain relative z-10 transition-transform group-hover:scale-110"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-amber-400/20 blur-xl rounded-full scale-150 animate-pulse"></div>
-              <span className="material-symbols-outlined absolute -top-1 -right-1 text-amber-500 text-lg z-20 animate-spin-slow">sunny</span>
+            <div className="relative flex items-center justify-center w-10 h-10">
+              <div className="absolute inset-0 bg-amber-400/30 blur-lg rounded-full animate-pulse scale-125"></div>
+              <span className="material-symbols-outlined text-amber-500 text-3xl z-20 animate-spin-slow fill-icon">sunny</span>
             </div>
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-amber-600 transition-colors">陽光種子希望園</h2>
           </Link>

@@ -15,6 +15,7 @@ import postRoutes from './routes/posts';
 import commentRoutes from './routes/comments';
 import userRoutes from './routes/users';
 import notificationRoutes from './routes/notifications';
+import adminRoutes from './routes/adminRoutes';
 
 // 載入環境變數
 dotenv.config({ path: '.env.local' });
@@ -65,6 +66,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ========================
 // 靜態檔案服務 & SPA 支援
