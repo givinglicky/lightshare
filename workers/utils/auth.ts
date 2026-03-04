@@ -1,4 +1,4 @@
-/"**
+/**
  * 认证工具函数 - Cloudflare Workers 版本
  * 使用 Web Crypto API 替代 Node.js crypto
  */
