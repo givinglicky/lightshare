@@ -1,10 +1,13 @@
 export interface User {
   id: string;
   name: string;
+  email?: string;
   avatar: string;
   location?: string;
   joinDate?: string;
   bio?: string;
+  role?: string;
+  created_at?: string;
 }
 
 export interface Comment {
