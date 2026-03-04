@@ -11,9 +11,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- 檢查 role 欄位是否存在，不存在則新增
-ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user';
-
 -- 貼文表
 CREATE TABLE IF NOT EXISTS posts (
     id          TEXT PRIMARY KEY,
