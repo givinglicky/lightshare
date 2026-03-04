@@ -13,6 +13,28 @@ import { notificationRoutes } from './routes/notifications';
 // 创建路由实例
 const router = new Router();
 
+// 根路径
+router.get('/', () => {
+  return new Response(
+    JSON.stringify({
+      success: true,
+      message: 'LightShare API',
+      version: '1.0.0',
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth',
+        posts: '/api/posts',
+        users: '/api/users',
+        comments: '/api/comments',
+        notifications: '/api/notifications',
+      },
+    }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+    }
+  );
+});
+
 // 注册路由
 router.use('/api/auth', authRoutes);
 router.use('/api/posts', postRoutes);
