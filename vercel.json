@@ -1,12 +1,22 @@
 {
-    "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "http://localhost:3001/api/$1"
-        },
-        {
-            "source": "/(.*)",
-            "destination": "/index.html"
-        }
-    ]
+  "version": 2,
+  "name": "lightshare",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "@lightshare_api_url"
+  }
 }
