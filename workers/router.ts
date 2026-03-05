@@ -73,14 +73,15 @@ export class Router {
    */
   private addRoute(method: string, path: string, handler: Handler): void {
     const paramNames: string[] = [];
-    
+
     // 转换路径参数 :id 为正则表达式
     const regexPath = path.replace(/:([^/]+)/g, (match, paramName) => {
       paramNames.push(paramName);
       return '([^/]+)';
-    });
+    }).replace(/\/$/, ''); // 移除最後的斜線
 
-    const regex = new RegExp(`^${regexPath}$`);
+    // 匹配路徑，讓末尾斜線變成選擇性
+    const regex = new RegExp(`^${regexPath}/?$`);
 
     this.routes.push({
       method,
@@ -102,7 +103,7 @@ export class Router {
     // 查找匹配的路由
     for (const route of this.routes) {
       const match = pathname.match(route.regex);
-      
+
       if (match && (route.method === 'ALL' || route.method === method)) {
         // 提取路径参数
         const params: Record<string, string> = {};

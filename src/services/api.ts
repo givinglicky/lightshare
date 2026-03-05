@@ -1,4 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const getApiUrl = () => {
+    const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // 確保 URL 以 /api 結尾，且不會重複添加
+    const baseUrl = rawUrl.replace(/\/$/, '');
+    return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+
+const API_URL = getApiUrl();
 
 /**
  * 通用的 fetch 封裝，處理 Token 與錯誤
