@@ -33,5 +33,8 @@ export interface Post {
   likes_count: number;
   category: string;
   comments_count: number;
+  supporters_count: number; // 加油支持者數量
+  is_supported?: number;     // 當前用戶是否已支持 (1 or 0)
+  is_liked?: number;         // 當前用戶是否已點讚 (1 or 0)
   comments?: Comment[];
 }

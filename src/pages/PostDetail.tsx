@@ -220,9 +220,17 @@ export const PostDetail: React.FC = () => {
                 count={post.likes_count || 0}
                 onLike={async () => {
                   if (!id) return;
+                  if (!isAuthenticated) {
+                    setToastMessage('請先登入後再傳遞正能量喔！');
+                    setShowToast(true);
+                    setTimeout(() => navigate('/login'), 2000);
+                    return;
+                  }
                   try {
-                    await postService.likePost(id);
-                    setPost(prev => prev ? { ...prev, likes_count: (prev.likes_count || 0) + 1 } : null);
+                    const response = await postService.likePost(id);
+                    if (response) {
+                      setPost(prev => prev ? { ...prev, likes_count: response.likes_count } : null);
+                    }
                   } catch (err) {
                     console.error('點讚失敗', err);
                   }
@@ -276,7 +284,7 @@ export const PostDetail: React.FC = () => {
                     exit={{ scale: 0, x: -30, rotate: -30 }}
                     className="h-14 w-14 rounded-full border-4 border-vibrant-mint z-10 shadow-xl object-cover"
                     alt="You"
-                    src={currentUser.avatar}
+                    src={authUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(authUser?.name || 'U')}&background=00A67E&color=fff`}
                   />
                 )}
               </AnimatePresence>
