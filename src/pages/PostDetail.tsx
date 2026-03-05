@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { postService } from '../services/postService';
-import { currentUser } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Post, Comment } from '../types';
@@ -16,6 +16,8 @@ export const PostDetail: React.FC = () => {
   const [isJoined, setIsJoined] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const { user: authUser, isAuthenticated } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [supporterCount, setSupporterCount] = useState(0);
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<any[]>([]);
@@ -53,17 +55,22 @@ export const PostDetail: React.FC = () => {
 
   const handleJoinToggle = async () => {
     if (!id) return;
+    if (!isAuthenticated) {
+      setToastMessage('請先登入後再進行支持喔！');
+      setShowToast(true);
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
     try {
       if (!isJoined) {
         const response = await postService.supportPost(id);
-        if (response && response.success) {
+        if (response) {
           setIsJoined(true);
-          setSupporterCount(response.data.supporters_count);
+          setSupporterCount(response.supporters_count);
           setToastMessage('感謝您的加入！溫暖已傳遞。');
           setShowToast(true);
         }
       } else {
-        // 目前後端可能尚未實現取消支持，這裡先做前端狀態切換提示
         setToastMessage('您已經支持過這份溫暖囉！');
         setShowToast(true);
       }
@@ -74,26 +81,40 @@ export const PostDetail: React.FC = () => {
   };
 
   const handlePostComment = async () => {
-    if (!id || !commentText.trim()) return;
+    if (!id || !commentText.trim() || isSubmitting) return;
+
+    if (!isAuthenticated) {
+      setToastMessage('請先登入後再發佈留言喔！');
+      setShowToast(true);
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
+      // 增加一點點人工延遲感，讓 UI 反應更自然
+      await new Promise(resolve => setTimeout(resolve, 600));
+
       const response = await postService.createComment(id, commentText);
-      if (response && response.success) {
+      if (response) {
         const newComment = {
-          id: response.data.id || Date.now().toString(),
-          author_name: currentUser.name,
-          author_avatar: currentUser.avatar,
+          id: response.id || Date.now().toString(),
+          author_name: authUser?.name || '匿名鄰居',
+          author_avatar: authUser?.avatar || '',
           content: commentText,
           created_at: new Date().toISOString(),
         };
         setComments([newComment, ...comments]);
         setCommentText('');
-        setToastMessage('留言發布成功！');
+        setToastMessage('留言發布成功！感謝您的正能量 ✨');
         setShowToast(true);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('發布留言失敗', err);
-      setToastMessage('發布留言失敗，請稍後再試');
+      setToastMessage(err.message || '發布留言失敗，請稍後再試');
       setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
     }
     setTimeout(() => setShowToast(false), 3000);
   };
@@ -309,7 +330,7 @@ export const PostDetail: React.FC = () => {
               <img
                 className="h-12 w-12 rounded-full border-2 border-vibrant-mint object-cover hidden sm:block shadow-sm"
                 alt="Current user"
-                src={currentUser.avatar}
+                src={authUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(authUser?.name || 'U')}&background=00A67E&color=fff`}
               />
               <div className="flex-1 space-y-4">
                 <div className="relative">
@@ -318,6 +339,7 @@ export const PostDetail: React.FC = () => {
                     placeholder="想說點暖心的話支持鄰居嗎？"
                     rows={4}
                     maxLength={200}
+                    disabled={isSubmitting}
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                   ></textarea>
@@ -331,10 +353,17 @@ export const PostDetail: React.FC = () => {
                 <div className="flex justify-end">
                   <button
                     onClick={handlePostComment}
-                    disabled={!commentText.trim()}
-                    className="px-12 py-4 bg-vibrant-mint text-white font-black rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-vibrant-mint/20 active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed text-lg"
+                    disabled={!commentText.trim() || isSubmitting}
+                    className="px-12 py-4 bg-vibrant-mint text-white font-black rounded-2xl hover:brightness-110 transition-all shadow-xl shadow-vibrant-mint/20 active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed text-lg flex items-center gap-3"
                   >
-                    發佈留言
+                    {isSubmitting ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-xl">sync</span>
+                        發佈中...
+                      </>
+                    ) : (
+                      '發佈留言'
+                    )}
                   </button>
                 </div>
               </div>
