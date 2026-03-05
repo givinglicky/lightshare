@@ -54,6 +54,13 @@ export const postService = {
     },
 
     /**
+     * 取得貼文留言
+     */
+    getComments: async (postId: string) => {
+        return apiRequest<any[]>(`/posts/${postId}/comments`);
+    },
+
+    /**
      * 新增留言
      */
     createComment: async (postId: string, content: string) => {

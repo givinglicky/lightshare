@@ -126,15 +126,30 @@ router.get('/me', async (request, env) => {
 router.get('/:id', async (request, env, ctx, params) => {
   try {
     const { id } = params!;
+    const authHeader = request.headers.get('Authorization');
+    let userId = '';
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = await verifyToken(token, env.JWT_SECRET) as any;
+        if (decoded) userId = decoded.id;
+      } catch (e) {
+        // 忽略 token 錯誤
+      }
+    }
 
     const post = await env.D1_DATABASE.prepare(
       `SELECT p.*, u.name as author_name, u.avatar as author_avatar,
        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as likes_count,
-       (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comments_count
+       (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comments_count,
+       (SELECT COUNT(*) FROM supporters WHERE post_id = p.id) as supporters_count,
+       (SELECT COUNT(1) FROM likes WHERE post_id = p.id AND user_id = ?) as is_liked,
+       (SELECT COUNT(1) FROM supporters WHERE post_id = p.id AND user_id = ?) as is_supported
        FROM posts p
        JOIN users u ON p.user_id = u.id
        WHERE p.id = ?`
-    ).bind(id).first();
+    ).bind(userId, userId, id).first();
 
     if (!post) {
       throw new ApiError(404, '贴文不存在');
@@ -155,6 +170,57 @@ router.get('/:id', async (request, env, ctx, params) => {
         JSON.stringify({ success: false, error: error.message }),
         { status: error.status, headers: { 'Content-Type': 'application/json' } }
       );
+    }
+    throw error;
+  }
+});
+
+/**
+ * POST /api/posts/:id/support
+ * 加入支持者
+ */
+router.post('/:id/support', async (request, env, ctx, params) => {
+  try {
+    const { id: postId } = params!;
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) throw new ApiError(401, '未认证');
+    const token = authHeader.split(' ')[1];
+    const decoded = await verifyToken(token, env.JWT_SECRET) as any;
+    if (!decoded) throw new ApiError(401, '凭证无效');
+
+    const post = await env.D1_DATABASE.prepare('SELECT user_id, title FROM posts WHERE id = ?').bind(postId).first();
+    if (!post) throw new ApiError(404, '贴文不存在');
+
+    await env.D1_DATABASE.prepare(
+      'INSERT OR IGNORE INTO supporters (id, post_id, user_id) VALUES (?, ?, ?)'
+    ).bind(crypto.randomUUID(), postId, decoded.id).run();
+
+    // 通知作者
+    if (post.user_id !== decoded.id) {
+      await env.D1_DATABASE.prepare(
+        `INSERT INTO notifications (id, user_id, type, title, content, related_post_id)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      ).bind(
+        crypto.randomUUID(),
+        post.user_id,
+        'support',
+        '有人發送了支持！',
+        `鄰居為您的貼文「${post.title}」傳遞了正能量。`,
+        postId
+      ).run();
+    }
+
+    const count = await env.D1_DATABASE.prepare(
+      'SELECT COUNT(*) as count FROM supporters WHERE post_id = ?'
+    ).bind(postId).first();
+
+    return new Response(
+      JSON.stringify({ success: true, data: { supporters_count: count?.count || 0, is_supported: 1 } }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return new Response(JSON.stringify({ success: false, error: error.message }), { status: error.status, headers: { 'Content-Type': 'application/json' } });
     }
     throw error;
   }

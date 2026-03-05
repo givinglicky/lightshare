@@ -12,25 +12,26 @@ export interface User {
 
 export interface Comment {
   id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
+  user_id: string;
+  author_name: string;
+  author_avatar: string;
   content: string;
-  timestamp: string;
-  likes: number;
+  created_at: string;
+  likes_count: number;
 }
 
 export interface Post {
   id: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
+  user_id: string;
+  author_name: string;
+  author_avatar: string;
   title: string;
   content: string;
   image?: string;
   location: string;
-  timestamp: string;
-  likes: number;
+  created_at: string;
+  likes_count: number;
   category: string;
-  comments: Comment[];
+  comments_count: number;
+  comments?: Comment[];
 }

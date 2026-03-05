@@ -42,8 +42,8 @@ export const Feed: React.FC = () => {
                     {error}
                 </div>
             ) : (
-                {
-                    posts.length === 0 ? (
+                <div className="flex flex-col gap-6">
+                    {posts.length === 0 ? (
                         <div className="mt-8 p-10 text-center rounded-2xl bg-primary/10 dark:bg-slate-800/20 border-2 border-dashed border-primary/40">
                             <span className="material-symbols-outlined text-5xl text-vibrant-mint mb-4">volunteer_activism</span>
                             <p className="text-slate-600 dark:text-slate-300 font-medium">還沒有任何貼文。</p>
@@ -114,27 +114,24 @@ export const Feed: React.FC = () => {
                                 </div>
                             </Link>
                         ))
-                    )
-                }
+                    )}
 
                     {posts.length > 0 && (
-                <div className="mt-8 p-10 text-center rounded-2xl bg-primary/10 dark:bg-slate-800/20 border-2 border-dashed border-primary/40">
-                    <span className="material-symbols-outlined text-5xl text-vibrant-mint mb-4">volunteer_activism</span>
-                    <p className="text-slate-600 dark:text-slate-300 font-medium">沒有更多貼文了。</p>
-                    <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">晚點再來看看，或者親自發起一份善意。</p>
+                        <div className="mt-8 p-10 text-center rounded-2xl bg-primary/10 dark:bg-slate-800/20 border-2 border-dashed border-primary/40">
+                            <span className="material-symbols-outlined text-5xl text-vibrant-mint mb-4">volunteer_activism</span>
+                            <p className="text-slate-600 dark:text-slate-300 font-medium">沒有更多貼文了。</p>
+                            <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">晚點再來看看，或者親自發起一份善意。</p>
+                        </div>
+                    )}
                 </div>
             )}
-        </div>
-    )
-}
 
-<Link
-    to="/create"
-    className="fixed bottom-6 right-6 w-16 h-16 bg-amber-warm dark:bg-amber-400 text-amber-900 rounded-2xl shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50"
->
-    <span className="material-symbols-outlined text-3xl font-bold">add</span>
-</Link>
-        </main >
+            <Link
+                to="/create"
+                className="fixed bottom-6 right-6 w-16 h-16 bg-amber-warm dark:bg-amber-400 text-amber-900 rounded-2xl shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50"
+            >
+                <span className="material-symbols-outlined text-3xl font-bold">add</span>
+            </Link>
+        </main>
     );
-
 };

@@ -19,7 +19,7 @@ const App: React.FC = () => {
       <Router>
         <div className="min-h-screen flex flex-col bg-background-light dark:bg-background-dark">
           <Navbar />
-          <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="flex-1 w-full">
             <Routes>
               <Route path="/" element={<Navigate to="/feed" replace />} />
               <Route path="/feed" element={<Feed />} />
