@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { postService } from '../services/postService';
+import { EnergyButton } from '../components/EnergyButton';
 import { Post } from '../types';
 
 export const Feed: React.FC = () => {
@@ -76,10 +77,41 @@ export const Feed: React.FC = () => {
                                     <span className="text-xs font-medium text-teal-600 dark:text-teal-400 flex items-center gap-1">
                                         <span className="material-symbols-outlined text-[14px]">location_on</span> {post.location || '未知地點'}
                                     </span>
-                                    <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-warm dark:bg-amber-900/30 text-amber-700 dark:text-amber-200 transition-all hover:bg-amber-100 active:scale-95">
-                                        <span className="material-symbols-outlined text-[20px] fill-icon">sunny</span>
-                                        <span className="text-sm font-bold">{post.likes_count || 0} 份正能量</span>
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (navigator.share) {
+                                                    navigator.share({
+                                                        title: post.title,
+                                                        text: post.content,
+                                                        url: `${window.location.origin}/post/${post.id}`
+                                                    }).catch(() => { });
+                                                } else {
+                                                    navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
+                                                    alert('連結已複製到剪貼簿！');
+                                                }
+                                            }}
+                                            className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:bg-primary hover:text-vibrant-mint transition-all active:scale-90"
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">share</span>
+                                        </button>
+                                        <EnergyButton
+                                            count={post.likes_count || 0}
+                                            onLike={async () => {
+                                                try {
+                                                    await postService.likePost(post.id);
+                                                    // 重新獲取貼文或局部更新狀態以同步數據
+                                                    setPosts(prev => prev.map(p =>
+                                                        p.id === post.id ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p
+                                                    ));
+                                                } catch (err) {
+                                                    console.error('點讚失敗', err);
+                                                }
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </Link>
                         ))

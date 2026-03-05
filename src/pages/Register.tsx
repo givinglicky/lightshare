@@ -67,9 +67,16 @@ export const Register: React.FC = () => {
                 <div className="absolute -bottom-20 -right-20 size-80 bg-amber-400/20 rounded-full blur-3xl"></div>
                 <div className="absolute -top-20 -left-20 size-60 bg-teal-400/30 rounded-full blur-3xl"></div>
             </div>
-            <div className="p-8 md:p-12 flex flex-col justify-center">
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Create your account</h2>
+            <div className="p-8 md:p-12 flex flex-col justify-center relative">
+                <Link
+                    to="/login"
+                    className="absolute top-6 left-8 flex items-center gap-2 text-slate-500 hover:text-primary-vibrant transition-colors group z-20"
+                >
+                    <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+                    <span className="font-medium">回上一頁</span>
+                </Link>
+                <div className="mb-8 mt-10 md:mt-0">
+                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">建立您的帳戶</h2>
                     <p className="text-slate-600 dark:text-slate-400">今天就加入 陽光種子希望園，開啟您的溫暖旅程。</p>
                 </div>
 
@@ -146,7 +153,7 @@ export const Register: React.FC = () => {
                             I agree to the <a className="text-primary-vibrant hover:underline" href="#">Terms of Service</a> and <a className="text-primary-vibrant hover:underline" href="#">Privacy Policy</a>.
                         </label>
                     </div>
-                    <button 
+                    <button
                         className="w-full py-4 px-6 bg-primary-vibrant hover:bg-teal-500 text-white font-bold text-lg rounded-xl shadow-lg shadow-primary-vibrant/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         type="submit"
                         disabled={loading}

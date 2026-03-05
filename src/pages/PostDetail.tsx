@@ -1,18 +1,40 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockPosts, currentUser } from '../constants';
+import { postService } from '../services/postService';
+import { currentUser } from '../constants';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
-import { Comment } from '../types';
+import { Post, Comment } from '../types';
+import { EnergyButton } from '../components/EnergyButton';
 
 export const PostDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const post = mockPosts.find((p) => p.id === id);
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isJoined, setIsJoined] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [supporterCount, setSupporterCount] = useState(156);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Comment[]>(post?.comments || []);
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const data = await postService.getPostById(id);
+        setPost(data);
+        setComments(data.comments || []);
+      } catch (err) {
+        console.error('無法載入貼文', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [id]);
+
+  if (loading) return <div className="flex justify-center items-center min-h-[60vh]"><span className="animate-spin material-symbols-outlined text-4xl text-vibrant-mint">sync</span></div>;
 
   if (!post) {
     return (
@@ -61,14 +83,35 @@ export const PostDetail: React.FC = () => {
               ))}
             </div>
             <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-6">
-              <button className="flex items-center gap-2 group">
-                <div className="h-12 w-12 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                  <span className="material-symbols-outlined fill-icon text-2xl">sunny</span>
-                </div>
-                <span className="font-bold text-slate-700 dark:text-slate-200">{post.likes} 份正能量</span>
-              </button>
-              <button className="flex items-center gap-2 group">
-                <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
+              <EnergyButton
+                size="lg"
+                count={post.likes_count || 0}
+                onLike={async () => {
+                  if (!id) return;
+                  try {
+                    await postService.likePost(id);
+                    setPost(prev => prev ? { ...prev, likes_count: (prev.likes_count || 0) + 1 } : null);
+                  } catch (err) {
+                    console.error('點讚失敗', err);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: post.title,
+                      text: post.content,
+                      url: window.location.href
+                    }).catch(() => { });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    alert('連結已複製到剪貼簿！');
+                  }
+                }}
+                className="flex items-center gap-2 group"
+              >
+                <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:scale-110 group-hover:bg-primary transition-all">
                   <span className="material-symbols-outlined text-2xl">share</span>
                 </div>
                 <span className="font-bold text-slate-700 dark:text-slate-200">分享</span>
@@ -99,8 +142,8 @@ export const PostDetail: React.FC = () => {
               )}
             </div>
             <div>
-              <p className="font-bold text-slate-900 dark:text-slate-100">今天有 {supporterCount} 人為 {post.userName.split(' ')[0]} 加油</p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">您的鼓勵對她很重要</p>
+              <p className="font-bold text-slate-900 dark:text-slate-100">今天有 {supporterCount} 人為 {post.title.substring(0, 5)}... 加油</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">您的鼓勵對作者很重要</p>
             </div>
           </div>
           <button
@@ -115,8 +158,8 @@ export const PostDetail: React.FC = () => {
             disabled={isJoined}
             className={cn(
               "w-full sm:w-auto px-6 py-2.5 font-bold rounded-lg transition-all shadow-sm flex items-center justify-center gap-2",
-              isJoined 
-                ? "bg-slate-200 text-slate-500 cursor-default" 
+              isJoined
+                ? "bg-slate-200 text-slate-500 cursor-default"
                 : "bg-vibrant-mint text-white hover:brightness-110 active:scale-95"
             )}
           >

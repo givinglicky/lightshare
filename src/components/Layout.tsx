@@ -57,10 +57,14 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative flex items-center justify-center w-10 h-10">
-              <div className="absolute inset-0 bg-amber-400/30 blur-lg rounded-full animate-pulse scale-125"></div>
-              <span className="material-symbols-outlined text-amber-500 text-3xl z-20 animate-spin-slow fill-icon">sunny</span>
+              <div className="absolute inset-0 bg-amber-400/40 blur-xl rounded-full animate-pulse scale-150 group-hover:bg-amber-500/50"></div>
+              <div className="absolute inset-0 bg-amber-200/20 blur-md rounded-full group-hover:scale-125 transition-transform"></div>
+              <span className="material-symbols-outlined text-amber-500 text-3xl z-20 animate-spin-slow-variable fill-icon drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">sunny</span>
             </div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-amber-600 transition-colors">陽光種子希望園</h2>
+            <div className="flex flex-col -gap-1">
+              <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-amber-600 transition-colors leading-none">陽光種子</h2>
+              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-500 tracking-[0.2em] leading-none mt-1">希望園</span>
+            </div>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="text-sm font-semibold hover:text-vibrant-mint transition-colors">首頁</Link>
@@ -76,14 +80,14 @@ export const Navbar: React.FC = () => {
               type="text"
             />
           </div>
-          
+
           <div className="relative" ref={notificationRef}>
-            <button 
+            <button
               onClick={() => setShowNotifications(!showNotifications)}
               className={cn(
                 "p-2 rounded-xl transition-colors relative",
-                showNotifications 
-                  ? "bg-primary text-vibrant-mint" 
+                showNotifications
+                  ? "bg-primary text-vibrant-mint"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary"
               )}
             >
@@ -105,7 +109,7 @@ export const Navbar: React.FC = () => {
                   </div>
                   <div className="max-h-[400px] overflow-y-auto">
                     {mockNotifications.map((notif) => (
-                      <button 
+                      <button
                         key={notif.id}
                         className="w-full p-4 flex gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left border-b border-slate-50 dark:border-slate-800 last:border-0"
                       >
@@ -120,8 +124,8 @@ export const Navbar: React.FC = () => {
                       </button>
                     ))}
                   </div>
-                  <Link 
-                    to="/notifications" 
+                  <Link
+                    to="/notifications"
                     className="block p-3 text-center text-sm font-bold text-slate-500 hover:text-vibrant-mint bg-slate-50 dark:bg-slate-800/50 transition-colors"
                     onClick={() => setShowNotifications(false)}
                   >

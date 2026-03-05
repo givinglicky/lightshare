@@ -17,10 +17,49 @@
   --radius-2xl: 1.75rem;
 
   @keyframes spin-slow {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
+
+  @keyframes spin-slow-variable {
+    0% {
+      transform: rotate(0deg) scale(1);
+    }
+
+    50% {
+      transform: rotate(180deg) scale(1.1);
+    }
+
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+
+  @keyframes glow-pulse {
+    0% {
+      filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.4));
+      opacity: 0.8;
+    }
+
+    50% {
+      filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.7));
+      opacity: 1;
+    }
+
+    100% {
+      filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.4));
+      opacity: 0.8;
+    }
+  }
+
   --animate-spin-slow: spin-slow 8s linear infinite;
+  --animate-spin-slow-variable: spin-slow-variable 12s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 4s ease-in-out infinite;
 }
 
 @layer base {

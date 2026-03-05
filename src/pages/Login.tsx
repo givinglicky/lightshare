@@ -47,23 +47,31 @@ export const Login: React.FC = () => {
             </div>
             <div className="flex-1 flex flex-col justify-center px-8 sm:px-12 lg:px-20 bg-white dark:bg-slate-900">
                 <div className="max-w-md w-full mx-auto">
-                    <div className="flex items-center gap-2 mb-8">
+                    <Link
+                        to="/"
+                        className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-primary-vibrant transition-colors group z-20"
+                    >
+                        <span className="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+                        <span className="font-medium">回上一頁</span>
+                    </Link>
+
+                    <div className="flex items-center gap-2 mb-8 mt-12 lg:mt-0">
                         <div className="bg-primary-vibrant text-white p-2 rounded-lg">
                             <span className="material-symbols-outlined text-2xl">wb_sunny</span>
                         </div>
                         <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">陽光種子希望園</span>
                     </div>
                     <div className="mb-10">
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">歡迎回來</h1>
-                        <p className="text-slate-500 dark:text-slate-400">登入您的帳戶以繼續探索 陽光種子希望園</p>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">歡迎來到陽光種子希望園</h1>
+                        <p className="text-slate-500 dark:text-slate-400">登入您的帳戶以繼續探索社區的溫暖</p>
                     </div>
-                    
+
                     {error && (
                         <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
                             {error}
                         </div>
                     )}
-                    
+
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div className="relative">
                             <label className="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">電子郵件</label>
@@ -100,7 +108,7 @@ export const Login: React.FC = () => {
                             <input className="rounded border-slate-300 text-primary-vibrant focus:ring-primary-vibrant" id="remember" type="checkbox" />
                             <label className="text-sm text-slate-600 dark:text-slate-400" htmlFor="remember">記住我</label>
                         </div>
-                        <button 
+                        <button
                             className="w-full bg-primary-vibrant hover:bg-primary-vibrant/90 text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-primary-vibrant/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             type="submit"
                             disabled={loading}
@@ -126,7 +134,10 @@ export const Login: React.FC = () => {
                             <span className="px-2 bg-white dark:bg-slate-900 text-slate-500">或透過以下方式登入</span>
                         </div>
                     </div>
-                    <button className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-medium py-3 rounded-full transition-all flex items-center justify-center gap-3">
+                    <button
+                        onClick={() => navigate('/feed')}
+                        className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-medium py-3 rounded-full transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                    >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>

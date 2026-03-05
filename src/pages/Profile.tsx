@@ -74,7 +74,7 @@ export const Profile: React.FC = () => {
 
       <div className="px-6 mb-6">
         <div className="flex border-b border-slate-200 dark:border-slate-800 gap-8">
-          <button 
+          <button
             onClick={() => setActiveTab('posts')}
             className={cn(
               "pb-3 text-sm font-bold transition-all relative",
@@ -86,7 +86,7 @@ export const Profile: React.FC = () => {
               <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500" />
             )}
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('bookmarks')}
             className={cn(
               "pb-3 text-sm font-bold transition-all relative",
@@ -183,7 +183,13 @@ export const Profile: React.FC = () => {
           </div>
           <span className="material-symbols-outlined text-slate-400">chevron_right</span>
         </Link>
-        <button className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+        <button
+          onClick={() => {
+            localStorage.removeItem('token');
+            window.location.href = '/';
+          }}
+          className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+        >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined">logout</span>
             <span className="font-medium">登出</span>
