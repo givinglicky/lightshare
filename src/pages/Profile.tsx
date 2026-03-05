@@ -185,10 +185,14 @@ export const Profile: React.FC = () => {
         </Link>
         <button
           onClick={() => {
+            // 清除本地 Token
             localStorage.removeItem('token');
-            window.location.href = '/';
+            // 稍作延遲增加點擊感，然後跳轉到註冊頁面
+            setTimeout(() => {
+              window.location.href = '/register';
+            }, 300);
           }}
-          className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+          className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors active:scale-[0.98]"
         >
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined">logout</span>
