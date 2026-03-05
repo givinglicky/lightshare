@@ -23,7 +23,11 @@ export async function apiRequest<T>(
     const result = await response.json();
 
     if (!response.ok) {
-        throw new Error(result.error?.message || '發生錯誤');
+        // 支援 Workers 格式 { error: "string" } 和舊版格式 { error: { message: "string" } }
+        const errMsg = typeof result.error === 'string'
+            ? result.error
+            : result.error?.message || result.message || '發生錯誤';
+        throw new Error(errMsg);
     }
 
     return result.data as T;

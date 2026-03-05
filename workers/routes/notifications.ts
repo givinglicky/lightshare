@@ -67,6 +67,48 @@ router.get('/', async (request, env) => {
 });
 
 /**
+ * PUT /api/notifications/read-all
+ * 标记所有通知为已读（必须放在 /:id/read 之前，否则路由会被提前匹配）
+ */
+router.put('/read-all', async (request, env) => {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new ApiError(401, '未提供认证凭证');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = await verifyToken(token, env.JWT_SECRET);
+
+    if (!decoded || !decoded.id) {
+      throw new ApiError(401, '无效或已过期的凭证');
+    }
+
+    await env.D1_DATABASE.prepare(
+      'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0'
+    ).bind(decoded.id).run();
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: '所有通知已标记为已读',
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return new Response(
+        JSON.stringify({ success: false, error: error.message }),
+        { status: error.status, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    throw error;
+  }
+});
+
+/**
  * PUT /api/notifications/:id/read
  * 标记单个通知为已读
  */
@@ -94,48 +136,6 @@ router.put('/:id/read', async (request, env, ctx, params) => {
       JSON.stringify({
         success: true,
         message: '通知已标记为已读',
-      }),
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return new Response(
-        JSON.stringify({ success: false, error: error.message }),
-        { status: error.status, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    throw error;
-  }
-});
-
-/**
- * PUT /api/notifications/read-all
- * 标记所有通知为已读
- */
-router.put('/read-all', async (request, env) => {
-  try {
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new ApiError(401, '未提供认证凭证');
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = await verifyToken(token, env.JWT_SECRET);
-
-    if (!decoded || !decoded.id) {
-      throw new ApiError(401, '无效或已过期的凭证');
-    }
-
-    await env.D1_DATABASE.prepare(
-      'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0'
-    ).bind(decoded.id).run();
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: '所有通知已标记为已读',
       }),
       {
         headers: { 'Content-Type': 'application/json' },
