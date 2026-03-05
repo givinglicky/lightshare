@@ -37,9 +37,9 @@ router.get('/', () => {
 
 // 注册路由
 router.use('/api/auth', authRoutes);
+router.use('/api/posts/:id/comments', commentRoutes); // 必須在 postRoutes 之前或確保路徑具體
 router.use('/api/posts', postRoutes);
 router.use('/api/users', userRoutes);
-router.use('/api/comments', commentRoutes);
 router.use('/api/notifications', notificationRoutes);
 
 // 健康检查
@@ -72,11 +72,11 @@ export default {
 
     try {
       const response = await router.handle(request, env, ctx);
-      
+
       // 添加 CORS 头
       const corsHeaders = new Headers(response.headers);
       corsHeaders.set('Access-Control-Allow-Origin', '*');
-      
+
       return new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
@@ -84,7 +84,7 @@ export default {
       });
     } catch (error) {
       console.error('Error handling request:', error);
-      
+
       return new Response(
         JSON.stringify({
           success: false,
