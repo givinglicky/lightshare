@@ -11,4 +11,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // If missing, we export a proxy or null to avoid crashing on startup.
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : null as any
+  : (() => {
+      console.warn('Supabase URL or Anon Key is missing. Check your environment variables.');
+      return null;
+    })() as any

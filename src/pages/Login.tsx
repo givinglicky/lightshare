@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { authService } from '../services/authService';
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -17,14 +18,19 @@ export const Login: React.FC = () => {
             if (!supabase) {
                 throw new Error('Supabase 配置缺失。請在環境變數中設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY。');
             }
-            const { error } = await supabase.auth.signInWithOAuth({
+            const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
                     redirectTo: `${window.location.origin}/feed`,
+                    skipBrowserRedirect: true // 獲取 URL 以手動開啟彈窗，避開 iframe 限制
                 }
             });
 
             if (error) throw error;
+            if (data?.url) {
+                // 在新分頁/彈窗中開啟 Google 登入頁面
+                window.open(data.url, '_blank', 'width=500,height=600,left=100,top=100');
+            }
         } catch (err: any) {
             setError(err.message || 'Google 登入失敗');
         } finally {
