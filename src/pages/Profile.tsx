@@ -27,8 +27,8 @@ export const Profile: React.FC = () => {
     if (!authUser?.id) return;
     try {
       const response = await postService.getUserPosts(authUser.id);
-      if (response && response.data) {
-        setUserPosts(response.data);
+      if (response) {
+        setUserPosts(response);
       }
     } catch (err) {
       console.error('Failed to fetch user posts:', err);
