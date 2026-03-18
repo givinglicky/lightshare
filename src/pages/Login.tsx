@@ -9,8 +9,14 @@ export const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { user, login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate('/feed');
+        }
+    }, [isAuthenticated, navigate]);
 
     const loginWithGoogle = async () => {
         try {
