@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 import { apiRequest } from '../services/api';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
     user: User | null;
@@ -22,21 +23,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 初始化：檢查本地 Token 並同步用戶資料
     useEffect(() => {
         async function initializeAuth() {
+            // 首先檢查是否有手動登入的 token
             if (token) {
                 try {
-                    // 呼叫 /api/auth/me 驗證 Token 是否有效
                     const userData = await apiRequest<User>('/auth/me');
                     setUser(userData);
                 } catch (error) {
                     console.error('認證初始化失敗:', error);
-                    logout(); // Token 過期或無效
+                    logout();
+                }
+            } else if (supabase) {
+                // 如果沒有 token，檢查 Supabase 會話 (例如 Google 登入後重導向回來)
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    const sbUser: User = {
+                        id: session.user.id,
+                        email: session.user.email || '',
+                        name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                        avatar: session.user.user_metadata?.avatar_url || '',
+                        bio: '',
+                        created_at: session.user.created_at,
+                        role: 'user'
+                    };
+                    setUser(sbUser);
+                    setToken(session.access_token);
+                    localStorage.setItem('token', session.access_token);
                 }
             }
             setIsLoading(false);
         }
 
         initializeAuth();
-    }, [token]);
+
+        // 監聽 Supabase 認證狀態變化
+        const { data: { subscription } } = supabase?.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                const sbUser: User = {
+                    id: session.user.id,
+                    email: session.user.email || '',
+                    name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                    avatar: session.user.user_metadata?.avatar_url || '',
+                    bio: '',
+                    created_at: session.user.created_at,
+                    role: 'user'
+                };
+                setUser(sbUser);
+                setToken(session.access_token);
+                localStorage.setItem('token', session.access_token);
+            } else if (event === 'SIGNED_OUT') {
+                logout();
+            }
+        }) || { data: { subscription: null } };
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
 
     const login = (newToken: string, userData: User) => {
         localStorage.setItem('token', newToken);

@@ -17,18 +17,14 @@ export const Login: React.FC = () => {
             if (!supabase) {
                 throw new Error('Supabase 配置缺失。請在環境變數中設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY。');
             }
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin,
-                    skipBrowserRedirect: true // 獲取 URL 以手動開啟彈窗
+                    redirectTo: `${window.location.origin}/feed`,
                 }
             });
 
             if (error) throw error;
-            if (data?.url) {
-                window.open(data.url, '_blank', 'width=500,height=600,left=100,top=100');
-            }
         } catch (err: any) {
             setError(err.message || 'Google 登入失敗');
         } finally {
