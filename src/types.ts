@@ -12,12 +12,15 @@ export interface User {
 
 export interface Comment {
   id: string;
+  post_id: string;
   user_id: string;
   author_name: string;
   author_avatar: string;
   content: string;
   created_at: string;
-  likes_count: number;
+  likes_count?: number;
+  parent_id?: string; // 用於回覆功能
+  replies?: Comment[]; // 嵌套回覆列表
 }
 
 export interface Post {

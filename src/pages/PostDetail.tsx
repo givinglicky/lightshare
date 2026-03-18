@@ -20,8 +20,10 @@ export const PostDetail: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [supporterCount, setSupporterCount] = useState(0);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
+  const [replyText, setReplyText] = useState('');
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -97,12 +99,17 @@ export const PostDetail: React.FC = () => {
 
       const response = await postService.createComment(id, commentText);
       if (response) {
-        const newComment = {
-          id: response.id || Date.now().toString(),
+        // Workers 可能返回 { success: true, data: { ... } }
+        const commentData = response.data || response;
+        const newComment: Comment = {
+          id: commentData.id || Date.now().toString(),
+          post_id: id,
+          user_id: authUser?.id || '',
           author_name: authUser?.name || '匿名鄰居',
           author_avatar: authUser?.avatar || '',
           content: commentText,
-          created_at: new Date().toISOString(),
+          created_at: commentData.created_at || new Date().toISOString(),
+          replies: []
         };
         setComments([newComment, ...comments]);
         setCommentText('');
@@ -126,6 +133,51 @@ export const PostDetail: React.FC = () => {
       else next.add(commentId);
       return next;
     });
+  };
+
+  const handlePostReply = async (parentId: string) => {
+    if (!id || !replyText.trim() || isSubmitting) return;
+
+    if (!isAuthenticated) {
+      setToastMessage('請先登入後再回覆留言喔！');
+      setShowToast(true);
+      setTimeout(() => navigate('/login'), 2000);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 600));
+      const response = await postService.createComment(id, replyText, parentId);
+      if (response) {
+        const replyData = response.data || response;
+        const newReply: Comment = {
+          id: replyData.id || Date.now().toString(),
+          post_id: id,
+          user_id: authUser?.id || '',
+          author_name: authUser?.name || '匿名鄰居',
+          author_avatar: authUser?.avatar || '',
+          content: replyText,
+          created_at: replyData.created_at || new Date().toISOString(),
+          parent_id: parentId
+        };
+        
+        setComments(prev => prev.map(c => 
+          c.id === parentId 
+            ? { ...c, replies: [newReply, ...(c.replies || [])] } 
+            : c
+        ));
+        setReplyText('');
+        setActiveReplyId(null);
+        setToastMessage('回覆發布成功！✨');
+        setShowToast(true);
+      }
+    } catch (err: any) {
+      setToastMessage(err.message || '回覆失敗');
+      setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -187,9 +239,46 @@ export const PostDetail: React.FC = () => {
               </button>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-black mb-6 leading-tight text-slate-900 dark:text-slate-50 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-black mb-4 leading-tight text-slate-900 dark:text-slate-50 tracking-tight">
               {post.title}
             </h1>
+
+            {/* 社群分享列 */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {[
+                { name: 'Facebook', icon: 'facebook', color: 'bg-[#1877F2]', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                { name: 'X', icon: 'close', color: 'bg-black', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}` },
+                { name: 'LINE', icon: 'chat', color: 'bg-[#06C755]', url: `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(window.location.href)}` },
+                { name: 'WhatsApp', icon: 'phone_iphone', color: 'bg-[#25D366]', url: `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + ' ' + window.location.href)}` },
+                { name: 'Telegram', icon: 'send', color: 'bg-[#0088CC]', url: `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}` },
+              ].map((platform) => (
+                <a
+                  key={platform.name}
+                  href={platform.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-white text-xs font-bold transition-transform hover:scale-110",
+                    platform.color
+                  )}
+                >
+                  <span className="material-symbols-outlined text-sm">{platform.icon}</span>
+                  <span className="hidden sm:inline">{platform.name}</span>
+                </a>
+              ))}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setToastMessage('連結已複製到剪貼簿！');
+                  setShowToast(true);
+                  setTimeout(() => setShowToast(false), 3000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold transition-transform hover:scale-110"
+              >
+                <span className="material-symbols-outlined text-sm">content_copy</span>
+                <span className="hidden sm:inline">複製連結</span>
+              </button>
+            </div>
 
             {post.image ? (
               <div className="aspect-video w-full rounded-2xl overflow-hidden mb-8 shadow-inner bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-800">
@@ -381,55 +470,132 @@ export const PostDetail: React.FC = () => {
           <div className="space-y-6">
             <AnimatePresence mode="popLayout">
               {comments.map((comment) => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  key={comment.id}
-                  className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-lg shadow-slate-100/50 dark:shadow-none border border-slate-100 dark:border-slate-800 group hover:border-vibrant-mint/20 transition-all"
-                >
-                  <div className="flex gap-5">
-                    <img
-                      className="h-14 w-14 rounded-full border-2 border-slate-50 dark:border-slate-800 object-cover shadow-sm"
-                      alt={comment.author_name || comment.userName}
-                      src={comment.author_avatar || comment.userAvatar}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-black text-lg text-slate-900 dark:text-slate-50">{comment.author_name || comment.userName}</h4>
-                        <span className="text-xs font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full">
-                          {comment.created_at ? new Date(comment.created_at).toLocaleDateString() : (comment.timestamp || '剛剛')}
-                        </span>
-                      </div>
-                      <p className="text-slate-700 dark:text-slate-300 text-lg mb-6 leading-relaxed font-medium">
-                        {comment.content}
-                      </p>
-                      <div className="flex items-center gap-4 border-t border-slate-50 dark:border-slate-800/50 pt-5">
-                        <button
-                          onClick={() => toggleCommentLike(comment.id)}
-                          className={cn(
-                            "flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-sm font-black transition-all active:scale-90 shadow-sm",
-                            likedComments.has(comment.id)
-                              ? "bg-red-500 text-white shadow-red-200"
-                              : "bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 border border-slate-100 dark:border-slate-700"
-                          )}
-                        >
-                          <span className={cn(
-                            "material-symbols-outlined text-xl transition-transform duration-300",
-                            likedComments.has(comment.id) ? "fill-icon scale-125 rotate-12" : "group-hover:scale-110"
-                          )}>
-                            {likedComments.has(comment.id) ? 'sunny' : 'favorite'}
+                <div key={comment.id} className="space-y-4">
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-lg shadow-slate-100/50 dark:shadow-none border border-slate-100 dark:border-slate-800 group hover:border-vibrant-mint/20 transition-all"
+                  >
+                    <div className="flex gap-5">
+                      <img
+                        className="h-14 w-14 rounded-full border-2 border-slate-50 dark:border-slate-800 object-cover shadow-sm"
+                        alt={comment.author_name}
+                        src={comment.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.author_name || 'U')}&background=00A67E&color=fff`}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-black text-lg text-slate-900 dark:text-slate-50">{comment.author_name}</h4>
+                          <span className="text-xs font-bold text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full">
+                            {comment.created_at ? new Date(comment.created_at).toLocaleDateString() : '剛剛'}
                           </span>
-                          {likedComments.has(comment.id) ? '能量已傳遞' : '送出溫暖'}
-                        </button>
-                        <button className="text-slate-400 hover:text-vibrant-mint font-black text-sm px-4 py-2 hover:bg-vibrant-mint/5 rounded-xl transition-all">
-                          回覆
-                        </button>
+                        </div>
+                        <p className="text-slate-700 dark:text-slate-300 text-lg mb-6 leading-relaxed font-medium">
+                          {comment.content}
+                        </p>
+                        <div className="flex items-center gap-4 border-t border-slate-50 dark:border-slate-800/50 pt-5">
+                          <button
+                            onClick={() => toggleCommentLike(comment.id)}
+                            className={cn(
+                              "flex items-center gap-2.5 px-5 py-2.5 rounded-2xl text-sm font-black transition-all active:scale-90 shadow-sm",
+                              likedComments.has(comment.id)
+                                ? "bg-red-500 text-white shadow-red-200"
+                                : "bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 border border-slate-100 dark:border-slate-700"
+                            )}
+                          >
+                            <span className={cn(
+                              "material-symbols-outlined text-xl transition-transform duration-300",
+                              likedComments.has(comment.id) ? "fill-icon scale-125 rotate-12" : "group-hover:scale-110"
+                            )}>
+                              {likedComments.has(comment.id) ? 'sunny' : 'favorite'}
+                            </span>
+                            {likedComments.has(comment.id) ? '能量已傳遞' : '送出溫暖'}
+                          </button>
+                          <button 
+                            onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
+                            className="text-slate-400 hover:text-vibrant-mint font-black text-sm px-4 py-2 hover:bg-vibrant-mint/5 rounded-xl transition-all"
+                          >
+                            回覆
+                          </button>
+                        </div>
+
+                        {/* 回覆輸入框 */}
+                        <AnimatePresence>
+                          {activeReplyId === comment.id && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="mt-6 overflow-hidden"
+                            >
+                              <div className="relative">
+                                <textarea
+                                  autoFocus
+                                  className="w-full rounded-2xl border-2 border-slate-100 dark:border-slate-800 dark:bg-slate-800/30 focus:ring-vibrant-mint focus:border-vibrant-mint placeholder:text-slate-400 p-4 transition-all text-sm font-medium resize-none shadow-inner"
+                                  placeholder={`回覆 ${comment.author_name}...`}
+                                  rows={3}
+                                  value={replyText}
+                                  onChange={(e) => setReplyText(e.target.value)}
+                                  disabled={isSubmitting}
+                                ></textarea>
+                                <div className="flex justify-end mt-2 gap-2">
+                                  <button
+                                    onClick={() => setActiveReplyId(null)}
+                                    className="px-4 py-2 text-slate-400 font-bold text-sm hover:underline"
+                                  >
+                                    取消
+                                  </button>
+                                  <button
+                                    onClick={() => handlePostReply(comment.id)}
+                                    disabled={!replyText.trim() || isSubmitting}
+                                    className="px-6 py-2 bg-vibrant-mint text-white font-black rounded-xl hover:brightness-110 transition-all text-sm shadow-md active:scale-95 disabled:opacity-50"
+                                  >
+                                    {isSubmitting ? '發文中...' : '發佈回覆'}
+                                  </button>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+
+                  {/* 渲染回覆列表 */}
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="ml-12 space-y-4 border-l-2 border-slate-100 dark:border-slate-800 pl-6">
+                      {comment.replies.map((reply) => (
+                        <motion.div
+                          key={reply.id}
+                          layout
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="bg-white/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-50 dark:border-slate-800 shadow-sm"
+                        >
+                          <div className="flex gap-4">
+                            <img
+                              className="h-10 w-10 rounded-full border border-slate-100 dark:border-slate-800 object-cover shadow-sm"
+                              alt={reply.author_name}
+                              src={reply.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.author_name || 'U')}&background=00A67E&color=fff`}
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between mb-1">
+                                <h5 className="font-black text-sm text-slate-900 dark:text-slate-50">{reply.author_name}</h5>
+                                <span className="text-[10px] font-bold text-slate-400">
+                                  {reply.created_at ? new Date(reply.created_at).toLocaleDateString() : '剛剛'}
+                                </span>
+                              </div>
+                              <p className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                                {reply.content}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </AnimatePresence>
           </div>

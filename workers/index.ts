@@ -106,5 +106,7 @@ export default {
 // 环境变量类型定义
 export interface Env {
   JWT_SECRET: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
   D1_DATABASE: D1Database;
 }

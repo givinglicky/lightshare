@@ -132,6 +132,101 @@ router.post('/login', async (request, env) => {
 });
 
 /**
+ * POST /api/auth/google
+ * Google 登录
+ */
+router.post('/google', async (request, env) => {
+  try {
+    const { credential } = await request.json();
+
+    if (!credential) {
+      throw new ApiError(400, '缺少 Google 认证信息');
+    }
+
+    // 验证 Google ID Token
+    const response = await fetch('https://oauth2.googleapis.com/tokeninfo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `id_token=${credential}`,
+    });
+
+    if (!response.ok) {
+      throw new ApiError(401, '无效的 Google 认证信息');
+    }
+
+    const payload = await response.json();
+    
+    // 验证客户端 ID
+    if (payload.aud !== env.GOOGLE_CLIENT_ID) {
+      throw new ApiError(401, '无效的 Google 客户端 ID');
+    }
+
+    const { email, name, picture, sub: googleId } = payload;
+
+    if (!email) {
+      throw new ApiError(401, '无效的 Google 账户信息');
+    }
+
+    // 查找或创建用户
+    let user = await env.D1_DATABASE.prepare(
+      'SELECT * FROM users WHERE email = ?'
+    ).bind(email).first();
+
+    if (!user) {
+      // 创建新用户
+      const userId = crypto.randomUUID();
+      const passwordHash = await hashPassword(crypto.randomUUID());
+      
+      await env.D1_DATABASE.prepare(
+        'INSERT INTO users (id, name, email, password_hash, avatar, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(userId, name || 'Google User', email, passwordHash, picture || '', new Date().toISOString()).run();
+
+      user = {
+        id: userId,
+        name: name || 'Google User',
+        email,
+        password_hash: passwordHash,
+        avatar: picture || '',
+        role: 'user',
+      };
+    }
+
+    // 生成 Token
+    const token = await generateToken(user.id, env.JWT_SECRET);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: 'Google 登录成功',
+        data: {
+          token,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+          },
+        },
+      }),
+      {
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return new Response(
+        JSON.stringify({ success: false, error: error.message }),
+        { status: error.status, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+    throw error;
+  }
+});
+
+/**
  * GET /api/auth/me
  * 获取当前用户信息
  */

@@ -56,4 +56,12 @@ export const authService = {
         });
         return response;
     },
+
+    async updateUser(data: Partial<AuthUser>): Promise<AuthUser> {
+        const response = await apiRequest<AuthUser>('/users/me', {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        return response;
+    },
 };

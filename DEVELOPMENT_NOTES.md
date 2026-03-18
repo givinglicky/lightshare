@@ -770,3 +770,7 @@ docker run -p 8000:8000 -e GEMINI_API_KEY=your_key moderation-service
 | 11 | 部署缺少 cors 依赖 | ✅ 已修复 | 安装 `cors` 包并推送到 GitHub |
 | 12 | 部署缺少 google-auth-library | ✅ 已修复 | 安装 `google-auth-library` 包并推送到 GitHub |
 | 13 | 添加内容审核系统 | ✅ 已完成 | 创建独立的 FastAPI 审核服务，集成 Gemini AI |
+| 14 | 貼文詳情頁「沒畫面」或空白 | ✅ 已修復 | 修正後端 API 欄位返回（D1 綁定與子查詢），優化前端 Loading 狀態處理 |
+| 15 | 發佈留言沒效果 (404 / 邏輯錯誤) | ✅ 已修復 | 修正 Worker 路由掛載路徑，串接 AuthContext 進行權限檢查並加入按鈕 Loading 動畫 |
+| 16 | 「加入他們」數據不持久 | ✅ 已連通 | 實作 D1 `supporters` 表操作路由，同步前端統計數字與通知發送機制 |
+| 17 | 登出功能無效 | ✅ 已修復 | 在 `Profile.tsx` 正確調用 `logout()` 並引導跳轉至註冊頁面 |

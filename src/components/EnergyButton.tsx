@@ -134,21 +134,38 @@ export const EnergyButton: React.FC<EnergyButtonProps> = ({
                 </span>
             </motion.button>
 
-            {/* 里程碑文字 */}
+            {/* 里程碑文字與飄浮數字 */}
             <AnimatePresence>
-                {isAnimating && (isHundred || isThousand) && (
+                {isAnimating && (
                     <motion.div
-                        initial={{ opacity: 0, y: 0 }}
-                        animate={{ opacity: 1, y: -60 }}
+                        key="floating-text"
+                        initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                        animate={{ 
+                            opacity: [0, 1, 1, 0], 
+                            y: -80,
+                            scale: count % 10 === 0 ? [0.5, 1.5, 1.2] : [0.5, 1, 1]
+                        }}
                         exit={{ opacity: 0 }}
-                        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none"
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none z-[60]"
                     >
-                        <span className={cn(
-                            "font-black text-xl italic uppercase tracking-tighter",
-                            isThousand ? "text-red-600 scale-125 block" : "text-amber-600"
-                        )}>
-                            {isThousand ? "🔥 Super Energy Burst! 🔥" : "✨ Amazing! ✨"}
-                        </span>
+                        {count % 10 === 0 ? (
+                            <div className="flex flex-col items-center">
+                                <span className={cn(
+                                    "font-black text-2xl italic uppercase tracking-tighter drop-shadow-md",
+                                    isThousand ? "text-red-500" : isHundred ? "text-amber-500" : "text-orange-500"
+                                )}>
+                                    +{count % 100 === 0 ? (count % 1000 === 0 ? "1000" : "100") : "10"}
+                                </span>
+                                <span className="text-[10px] font-black text-amber-600 bg-white/80 px-2 py-0.5 rounded-full shadow-sm">
+                                    {isThousand ? "LEGENDARY!" : "MILESTONE!"}
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="font-black text-slate-400 text-xl tracking-tighter">
+                                +1
+                            </span>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

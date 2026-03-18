@@ -1,21 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { currentUser } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 
 export const EditProfile: React.FC = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState(currentUser.name);
-  const [bio, setBio] = useState(currentUser.bio);
+  const { authUser, updateAuthUser } = useAuth();
+  const [name, setName] = useState(authUser?.name || '');
+  const [bio, setBio] = useState(authUser?.bio || '');
+  const [avatar, setAvatar] = useState(authUser?.avatar || '');
   const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = () => {
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!authUser) return;
     setIsSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const updatedUser = await authService.updateUser({ 
+        name, 
+        bio,
+        avatar 
+      });
+      updateAuthUser(updatedUser);
       navigate('/profile');
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      alert('儲存失敗，請稍後再試');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -32,16 +61,23 @@ export const EditProfile: React.FC = () => {
 
       <div className="space-y-8">
         <div className="flex flex-col items-center">
-          <div className="relative group cursor-pointer">
+          <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
             <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm transition-opacity group-hover:opacity-80"
-              style={{ backgroundImage: `url("${currentUser.avatar}")` }}
+              style={{ backgroundImage: `url("${avatar}")` }}
             ></div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <div className="bg-black/50 text-white rounded-full p-2">
                 <span className="material-symbols-outlined">photo_camera</span>
               </div>
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
           </div>
           <p className="text-xs text-slate-400 mt-3">點擊更換頭像</p>
         </div>

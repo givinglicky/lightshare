@@ -63,10 +63,10 @@ export const postService = {
     /**
      * 新增留言
      */
-    createComment: async (postId: string, content: string) => {
+    createComment: async (postId: string, content: string, parentId?: string) => {
         return apiRequest<any>(`/posts/${postId}/comments`, {
             method: 'POST',
-            body: JSON.stringify({ content }),
+            body: JSON.stringify({ content, parent_id: parentId }),
         });
     },
 

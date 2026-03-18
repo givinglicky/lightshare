@@ -1,11 +1,64 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { currentUser, mockPosts } from '../constants';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
+import { postService } from '../services/postService';
+import { Post } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 export const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posts' | 'bookmarks'>('posts');
+  const { authUser, updateAuthUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const [avatar, setAvatar] = useState(authUser?.avatar || '');
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (authUser?.id) {
+      setAvatar(authUser.avatar || '');
+      fetchUserPosts();
+    }
+  }, [authUser]);
+
+  const fetchUserPosts = async () => {
+    if (!authUser?.id) return;
+    try {
+      const response = await postService.getUserPosts(authUser.id);
+      if (response && response.data) {
+        setUserPosts(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user posts:', err);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && authUser) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Avatar = reader.result as string;
+        try {
+          setLoading(true);
+          const updatedUser = await authService.updateUser({ avatar: base64Avatar });
+          updateAuthUser(updatedUser);
+          setAvatar(base64Avatar);
+        } catch (err) {
+          console.error('Failed to update avatar:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const myPosts = [
     {
@@ -42,19 +95,31 @@ export const Profile: React.FC = () => {
       <div className="flex flex-col items-center py-8 px-6">
         <div className="relative">
           <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm"
-            style={{ backgroundImage: `url("${currentUser.avatar}")` }}
-          ></div>
+            onClick={handleAvatarClick}
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm cursor-pointer transition-opacity hover:opacity-80 relative overflow-hidden"
+            style={{ backgroundImage: `url("${avatar}")` }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/30">
+              <span className="material-symbols-outlined text-white text-3xl">photo_camera</span>
+            </div>
+          </div>
           <div className="absolute bottom-1 right-1 bg-emerald-500 h-6 w-6 rounded-full border-2 border-white flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[14px]">check</span>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
         </div>
         <div className="mt-4 text-center">
-          <h2 className="text-2xl font-bold">{currentUser.name}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{currentUser.bio}</p>
+          <h2 className="text-2xl font-bold">{authUser?.name || '匿名鄰居'}</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">{authUser?.bio || '這個人很懶，什麼都沒留下'}</p>
           <div className="flex items-center justify-center gap-1 mt-2 text-slate-400 text-sm">
             <span className="material-symbols-outlined text-sm">calendar_today</span>
-            <span>加入於 {currentUser.joinDate}</span>
+            <span>加入於 {authUser?.created_at ? new Date(authUser.created_at).toLocaleDateString() : '最近'}</span>
           </div>
         </div>
       </div>
@@ -111,23 +176,23 @@ export const Profile: React.FC = () => {
               exit={{ opacity: 0, x: 10 }}
               className="space-y-4"
             >
-              {myPosts.length > 0 ? (
-                myPosts.map((post) => (
-                  <div key={post.id} className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all">
+              {userPosts.length > 0 ? (
+                userPosts.map((post) => (
+                  <Link to={`/posts/${post.id}`} key={post.id} className="group flex flex-col gap-2 p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary transition-all">
                     <div className="flex justify-between items-start">
                       <h3 className="font-bold text-slate-800 dark:text-slate-200">{post.title}</h3>
-                      <span className="text-xs text-slate-400">{post.date}</span>
+                      <span className="text-xs text-slate-400">{post.created_at ? new Date(post.created_at).toLocaleDateString() : '最近'}</span>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{post.content}</p>
                     <div className="flex gap-4 mt-2">
                       <div className="flex items-center gap-1 text-xs text-amber-600">
-                        <span className="material-symbols-outlined text-xs">sunny</span> {post.likes}
+                        <span className="material-symbols-outlined text-xs">sunny</span> {post.likes_count || 0}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-slate-400">
-                        <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments}
+                        <span className="material-symbols-outlined text-xs">chat_bubble</span> {post.comments_count || 0}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="py-10 text-center text-slate-400 text-sm">尚無貼文</div>
@@ -185,12 +250,8 @@ export const Profile: React.FC = () => {
         </Link>
         <button
           onClick={() => {
-            // 清除本地 Token
-            localStorage.removeItem('token');
-            // 稍作延遲增加點擊感，然後跳轉到註冊頁面
-            setTimeout(() => {
-              window.location.href = '/register';
-            }, 300);
+            logout();
+            navigate('/login');
           }}
           className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors active:scale-[0.98]"
         >
