@@ -14,6 +14,9 @@ export const Login: React.FC = () => {
     const loginWithGoogle = async () => {
         try {
             setLoading(true);
+            if (!supabase) {
+                throw new Error('Supabase 配置缺失。請在環境變數中設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY。');
+            }
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
