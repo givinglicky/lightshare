@@ -127,5 +127,12 @@ export const postService = {
      */
     getMyPosts: async () => {
         return apiRequest<Post[]>('/posts/me');
+    },
+
+    /**
+     * 取得指定使用者的貼文
+     */
+    getUserPosts: async (userId: string) => {
+        return apiRequest<Post[]>(`/posts/user/${userId}`);
     }
 };
