@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -34,6 +35,7 @@ const mockNotifications = [
 ];
 
 export const Navbar: React.FC = () => {
+  const { user } = useAuth();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
@@ -136,13 +138,20 @@ export const Navbar: React.FC = () => {
             </AnimatePresence>
           </div>
 
-          <Link to="/profile" className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-vibrant-mint/20">
-            <img
-              className="h-full w-full object-cover"
-              alt="User profile"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnC9pkDkJcLlMMiUlDrz975Y54JGfMGZs1xVkSW2sMiv7mowZZBxExV9WBqQieFiYPld-EEqodfIVdpb57wY1WzIRpvT2ehbIMiKk8C5HJMG-yvUMj5XxqBdsLX-fSwZdGgB060xUK3ld6XTqpeP7HwrIpFOfvHuv2vo6ILLl6b0hiNN_g-2ylLntfHZMBfFee54rJp6XDKfawgxONSKxRgsSS4sUIC-uEhEFP_3Brv8OmKJFuXd0ad4T4g69nol2-bT0uzKoTwdA-"
-            />
-          </Link>
+          {user ? (
+              <Link to="/profile" className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-vibrant-mint/20 border-2 border-primary shadow-sm hover:brightness-90 transition-all">
+                <img
+                  className="h-full w-full object-cover"
+                  alt="User profile"
+                  src={user.avatar || `https://picsum.photos/seed/${user.id}/200/200`}
+                />
+              </Link>
+          ) : (
+              <div className="flex items-center gap-2">
+                  <Link to="/login" className="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-vibrant-mint transition-colors">登入</Link>
+                  <Link to="/register" className="px-4 py-2 bg-vibrant-mint text-white text-sm font-bold rounded-xl hover:brightness-110 transition-all shadow-md">註冊</Link>
+              </div>
+          )}
         </div>
       </div>
     </header>

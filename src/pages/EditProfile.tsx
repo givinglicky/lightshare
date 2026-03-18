@@ -1,15 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { authService } from '../services/authService';
 import { cn } from '../lib/utils';
 
 export const EditProfile: React.FC = () => {
   const navigate = useNavigate();
-  const { authUser, updateAuthUser } = useAuth();
-  const [name, setName] = useState(authUser?.name || '');
-  const [bio, setBio] = useState(authUser?.bio || '');
-  const [avatar, setAvatar] = useState(authUser?.avatar || '');
+  const { user, updateUser } = useAuth();
+  const [name, setName] = useState(user?.name || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [avatar, setAvatar] = useState(user?.avatar || '');
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -29,15 +30,29 @@ export const EditProfile: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!authUser) return;
+    if (!user) return;
     setIsSaving(true);
     try {
-      const updatedUser = await authService.updateUser({ 
+      if (!supabase) {
+          throw new Error('Supabase 配置缺失');
+      }
+
+      // 更新 Supabase 用戶詮釋資料
+      const { error } = await supabase.auth.updateUser({
+          data: {
+              full_name: name,
+              bio: bio,
+              avatar_url: avatar
+          }
+      });
+
+      if (error) throw error;
+
+      updateUser({ 
         name, 
         bio,
         avatar 
       });
-      updateAuthUser(updatedUser);
       navigate('/profile');
     } catch (err) {
       console.error('Failed to save profile:', err);

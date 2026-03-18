@@ -9,7 +9,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
     login: (token: string, userData: User) => void;
-    logout: () => void;
+    logout: () => Promise<void>;
     updateUser: (userData: Partial<User>) => void;
 }
 
@@ -86,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(userData);
     };
 
-    const logout = () => {
+    const logout = async () => {
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
         localStorage.removeItem('token');
         setToken(null);
         setUser(null);

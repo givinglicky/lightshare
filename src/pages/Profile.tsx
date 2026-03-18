@@ -9,24 +9,24 @@ import { cn } from '../lib/utils';
 
 export const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'posts' | 'bookmarks'>('posts');
-  const { authUser, updateAuthUser, logout } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
-  const [avatar, setAvatar] = useState(authUser?.avatar || '');
+  const [avatar, setAvatar] = useState(user?.avatar || '');
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (authUser?.id) {
-      setAvatar(authUser.avatar || '');
+    if (user?.id) {
+      setAvatar(user.avatar || '');
       fetchUserPosts();
     }
-  }, [authUser]);
+  }, [user]);
 
   const fetchUserPosts = async () => {
-    if (!authUser?.id) return;
+    if (!user?.id) return;
     try {
-      const response = await postService.getUserPosts(authUser.id);
+      const response = await postService.getUserPosts(user.id);
       if (response) {
         setUserPosts(response);
       }
@@ -41,14 +41,14 @@ export const Profile: React.FC = () => {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && authUser) {
+    if (file && user) {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64Avatar = reader.result as string;
         try {
           setLoading(true);
           const updatedUser = await authService.updateUser({ avatar: base64Avatar });
-          updateAuthUser(updatedUser);
+          updateUser(updatedUser);
           setAvatar(base64Avatar);
         } catch (err) {
           console.error('Failed to update avatar:', err);
@@ -118,11 +118,11 @@ export const Profile: React.FC = () => {
           />
         </div>
         <div className="mt-4 text-center">
-          <h2 className="text-2xl font-bold">{authUser?.name || '匿名鄰居'}</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">{authUser?.bio || '這個人很懶，什麼都沒留下'}</p>
+          <h2 className="text-2xl font-bold">{user?.name || '匿名鄰居'}</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">{user?.bio || '這個人很懶，什麼都沒留下'}</p>
           <div className="flex items-center justify-center gap-1 mt-2 text-slate-400 text-sm">
             <span className="material-symbols-outlined text-sm">calendar_today</span>
-            <span>加入於 {authUser?.created_at ? new Date(authUser.created_at).toLocaleDateString() : '最近'}</span>
+            <span>加入於 {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '最近'}</span>
           </div>
         </div>
       </div>
@@ -252,8 +252,8 @@ export const Profile: React.FC = () => {
           <span className="material-symbols-outlined text-slate-400">chevron_right</span>
         </Link>
         <button
-          onClick={() => {
-            logout();
+          onClick={async () => {
+            await logout();
             navigate('/login');
           }}
           className="w-full flex items-center justify-between p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors active:scale-[0.98]"

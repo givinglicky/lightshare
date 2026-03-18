@@ -51,8 +51,18 @@ export const Login: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await authService.login({ email, password });
-            login(response.token, response.user);
+            if (!supabase) {
+                throw new Error('Supabase 配置缺失');
+            }
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) throw error;
+            
+            // AuthContext will handle the session change and navigation via onAuthStateChange
+            // but for immediate feedback we can navigate
             navigate('/feed');
         } catch (err: any) {
             setError(err.message || '登入失敗，請稍後再試');

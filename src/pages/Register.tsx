@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 import { authService } from '../services/authService';
 
 export const Register: React.FC = () => {
@@ -30,9 +31,25 @@ export const Register: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await authService.register({ name, email, password });
-            login(response.token, response.user);
-            navigate('/feed');
+            if (!supabase) {
+                throw new Error('Supabase 配置缺失。請在環境變數中設定 VITE_SUPABASE_URL 與 VITE_SUPABASE_ANON_KEY。');
+            }
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: name,
+                        avatar_url: `https://picsum.photos/seed/${email}/200/200`
+                    }
+                }
+            });
+
+            if (error) throw error;
+            
+            // 註冊成功後導向至成功頁面
+            navigate('/success?type=register');
         } catch (err: any) {
             setError(err.message || '註冊失敗，請稍後再試');
         } finally {
