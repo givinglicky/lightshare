@@ -63,12 +63,12 @@ export const EditProfile: React.FC = () => {
         <div className="flex flex-col items-center">
           <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
             <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm transition-opacity group-hover:opacity-80"
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm transition-all group-hover:brightness-75"
               style={{ backgroundImage: `url("${avatar}")` }}
             ></div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <div className="bg-black/50 text-white rounded-full p-2">
-                <span className="material-symbols-outlined">photo_camera</span>
+              <div className="text-white">
+                <span className="material-symbols-outlined text-3xl">photo_camera</span>
               </div>
             </div>
             <input

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/authService';
+import { supabase } from '../lib/supabase';
 
 export const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -14,31 +14,18 @@ export const Login: React.FC = () => {
     const loginWithGoogle = async () => {
         try {
             setLoading(true);
-            // 導向後端 Google Auth 路徑
-            const googleAuthUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google/url`;
-            const windowFeatures = 'width=500,height=600,left=100,top=100';
-            const popup = window.open(googleAuthUrl, 'google-login', windowFeatures);
-
-            if (!popup) {
-                throw new Error('彈窗被瀏覽器攔截，請允許彈窗後再試');
-            }
-
-            // 監聽來自彈窗的消息
-            const messageListener = async (event: MessageEvent) => {
-                if (event.origin !== (import.meta.env.VITE_API_URL || 'http://localhost:3001')) return;
-                
-                if (event.data.type === 'AUTH_SUCCESS') {
-                    const { token, user } = event.data.payload;
-                    login(token, user);
-                    navigate('/feed');
-                    window.removeEventListener('message', messageListener);
-                } else if (event.data.type === 'AUTH_ERROR') {
-                    setError(event.data.payload || 'Google 登入失敗');
-                    window.removeEventListener('message', messageListener);
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin,
+                    skipBrowserRedirect: true // 獲取 URL 以手動開啟彈窗
                 }
-            };
+            });
 
-            window.addEventListener('message', messageListener);
+            if (error) throw error;
+            if (data?.url) {
+                window.open(data.url, '_blank', 'width=500,height=600,left=100,top=100');
+            }
         } catch (err: any) {
             setError(err.message || 'Google 登入失敗');
         } finally {
@@ -73,7 +60,7 @@ export const Login: React.FC = () => {
                             <img
                                 className="w-full h-full object-contain"
                                 alt="Illustration"
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLavU6gUPDD5xzap7Pj025B3rEeIiGsRIYk3Us6TpRootBRa53VOkJlhYJer8jgPLoHEK-qWwCj0n1o_0HylsCoYVWNkxbWdCZlaXIUpBCk_zW5OkogO28B0v7z2r6DzKavinMks_qadtkGMtLcYR0Icsi9ePtl_aF4dnUWCPXrj6pwZPRKh-jgMXJIuhYwVihzdGNfJEbk5Qw3L0bzfSfLlEr2Fybz7qDIOPlaMzeQvUaIThmtk84AeTedjJKrvIoCo_hCZY6VS_k"
+                                src="https://picsum.photos/seed/lightshare-login/600/600"
                             />
                         </div>
                     </div>

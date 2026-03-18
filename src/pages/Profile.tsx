@@ -96,9 +96,12 @@ export const Profile: React.FC = () => {
         <div className="relative">
           <div
             onClick={handleAvatarClick}
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm cursor-pointer transition-opacity hover:opacity-80 relative overflow-hidden"
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-32 w-32 border-4 border-primary shadow-sm cursor-pointer transition-all hover:brightness-75 group relative overflow-hidden"
             style={{ backgroundImage: `url("${avatar}")` }}
           >
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 text-white">
+              <span className="material-symbols-outlined text-3xl">photo_camera</span>
+            </div>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/30">
               <span className="material-symbols-outlined text-white text-3xl">photo_camera</span>
             </div>
