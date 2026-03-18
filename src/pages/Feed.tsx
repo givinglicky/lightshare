@@ -8,6 +8,8 @@ export const Feed: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         loadPosts();
@@ -25,11 +27,54 @@ export const Feed: React.FC = () => {
         }
     };
 
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) {
+            loadPosts();
+            return;
+        }
+
+        try {
+            setIsSearching(true);
+            const data = await postService.searchPosts(searchQuery);
+            setPosts(data?.data || data || []);
+        } catch (err) {
+            console.error('搜尋失敗', err);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
     return (
         <main className="max-w-[600px] mx-auto px-4 py-6 pb-24 relative min-h-screen">
-            <div className="mb-8 text-center sm:text-left">
-                <h2 className="text-2xl font-bold mb-1">社群動態</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">幫助鄰居，傳遞善意。</p>
+            <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold mb-1">社群動態</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">幫助鄰居，傳遞善意。</p>
+                </div>
+                
+                {/* 搜尋框 */}
+                <form onSubmit={handleSearch} className="relative group flex-1 max-w-xs">
+                    <input
+                        type="text"
+                        placeholder="搜尋溫暖內容..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm focus:ring-2 focus:ring-vibrant-mint/30 focus:border-vibrant-mint outline-none transition-all shadow-sm group-hover:shadow-md"
+                    />
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-vibrant-mint transition-colors">
+                        search
+                    </span>
+                    {searchQuery && (
+                        <button 
+                            type="button"
+                            onClick={() => { setSearchQuery(''); loadPosts(); }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                        >
+                            <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    )}
+                </form>
             </div>
 
             {loading ? (
